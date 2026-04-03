@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrimURL - Analytics Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Analytics Dashboard</h1>
+            <p class="tagline">Track your shortened URLs</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="stats-summary">
+                    <div class="stat-item">
+                        <span class="stat-value" id="totalUrls">0</span>
+                        <span class="stat-label">Total URLs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="totalClicks">0</span>
+                        <span class="stat-label">Total Clicks</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Your URLs</h2>
+                <div id="urlList" class="url-list">
+                    <p class="empty-state">No URLs yet. Shorten your first URL!</p>
+                </div>
+            </div>
+
+            <div id="analyticsModal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <h3 id="modalTitle">URL Analytics</h3>
+
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <span class="stat-value" id="modalClicks">0</span>
+                            <span class="stat-label">Total Clicks</span>
+                        </div>
+                    </div>
+
+                    <h4>Top Browsers</h4>
+                    <div id="browserStats" class="browser-stats"></div>
+
+                    <h4>Recent Clicks</h4>
+                    <div id="clickHistory" class="click-history">
+                        <p class="empty-state">No clicks yet</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="links">
+            <a href="/" class="dashboard-link">Back to Home</a>
+        </div>
+
+        <footer>
+            <p>Built with Spring Boot & MongoDB</p>
+        </footer>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

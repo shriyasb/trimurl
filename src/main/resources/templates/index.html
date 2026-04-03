@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrimURL - Smart URL Shortener</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TrimURL</h1>
+            <p class="tagline">Smart URL Shortener with Analytics</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="input-group">
+                    <input type="url" id="urlInput" placeholder="Paste your long URL here..." required>
+                    <button id="shortenBtn">Shorten</button>
+                </div>
+                <div id="result" class="result hidden">
+                    <p class="label">Your shortened URL:</p>
+                    <div class="short-url">
+                        <input type="text" id="shortUrl" readonly>
+                        <button id="copyBtn" class="copy-btn">Copy</button>
+                    </div>
+                </div>
+                <div id="error" class="error hidden"></div>
+            </div>
+
+            <div class="links">
+                <a href="/dashboard" class="dashboard-link">View Analytics Dashboard</a>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with Spring Boot & MongoDB</p>
+        </footer>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
