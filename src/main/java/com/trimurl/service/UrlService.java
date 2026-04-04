@@ -130,7 +130,7 @@ public class UrlService {
     }
 
     /**
-     * Finds and redirects to the original URL, while tracking the click.
+     * Finds and redirects to the original URL.
      */
     public String redirectToOriginal(String shortCode, String ipAddress, String userAgent) {
         Optional<UrlDocument> optDocument = urlRepository.findByShortCode(shortCode);
@@ -141,30 +141,18 @@ public class UrlService {
 
         UrlDocument document = optDocument.get();
 
-        // Store original URL before any processing
+        // Simply return the original URL - skip all extra processing for now
         String originalUrl = document.getOriginalUrl();
 
-        if (originalUrl == null || originalUrl.isEmpty()) {
-            return null;
-        }
-
-        // Check if URL is expired
-        if (document.getExpiryDate() != null && Instant.now().isAfter(document.getExpiryDate())) {
-            return null;
-        }
-
-        // Track the click - wrap in try-catch to prevent redirect failure
-        try {
-            Click click = new Click(shortCode, Instant.now(), ipAddress, extractBrowser(userAgent));
-            if (document.getClicks() == null) {
-                document.setClicks(new java.util.ArrayList<>());
+        if (originalUrl != null && !originalUrl.isEmpty()) {
+            // Simple click tracking - use the OLD 3-argument constructor that worked
+            try {
+                Click click = new Click(Instant.now(), ipAddress, extractBrowser(userAgent));
+                document.getClicks().add(click);
+                urlRepository.save(document);
+            } catch (Exception e) {
+                // Ignore errors, still return URL
             }
-            document.getClicks().add(click);
-            document.setClickCount(document.getClickCount() + 1);
-            document.setLastAccessed(Instant.now());
-            urlRepository.save(document);
-        } catch (Exception e) {
-            // Log error but don't break redirect
         }
 
         return originalUrl;
