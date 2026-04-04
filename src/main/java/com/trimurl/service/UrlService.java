@@ -7,6 +7,7 @@ import com.trimurl.model.UrlResponse;
 import com.trimurl.repository.UrlRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -178,9 +179,20 @@ public class UrlService {
     }
 
     private UrlResponse toUrlResponse(UrlDocument document) {
+        String shortUrl;
+        try {
+            shortUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/")
+                .path(document.getShortCode())
+                .build()
+                .toUriString();
+        } catch (Exception e) {
+            // Fallback for non-request contexts (tests, etc.)
+            shortUrl = baseUrl + "/" + document.getShortCode();
+        }
         return new UrlResponse(
             document.getShortCode(),
-            baseUrl + "/" + document.getShortCode(),
+            shortUrl,
             document.getOriginalUrl(),
             document.getCreatedAt(),
             document.getClicks().size()
