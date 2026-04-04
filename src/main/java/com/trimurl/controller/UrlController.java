@@ -116,23 +116,6 @@ public class UrlController {
     }
 
     /**
-     * Redirect: Handle short URL access
-     */
-    @GetMapping("/{shortCode}")
-    public String redirect(@PathVariable String shortCode, HttpServletRequest request) {
-        String ipAddress = getClientIp(request);
-        String userAgent = request.getHeader("User-Agent");
-
-        String originalUrl = urlService.redirectToOriginal(shortCode, ipAddress, userAgent);
-
-        if (originalUrl == null) {
-            return "redirect:/error";
-        }
-
-        return "redirect:" + originalUrl;
-    }
-
-    /**
      * Web: Dashboard page with statistics
      */
     @GetMapping("/dashboard")
@@ -172,6 +155,23 @@ public class UrlController {
     @GetMapping("/error")
     public String error() {
         return "error";
+    }
+
+    /**
+     * Redirect: Handle short URL access (MUST be last)
+     */
+    @GetMapping("/{shortCode}")
+    public String redirect(@PathVariable String shortCode, HttpServletRequest request) {
+        String ipAddress = getClientIp(request);
+        String userAgent = request.getHeader("User-Agent");
+
+        String originalUrl = urlService.redirectToOriginal(shortCode, ipAddress, userAgent);
+
+        if (originalUrl == null) {
+            return "redirect:/error";
+        }
+
+        return "redirect:" + originalUrl;
     }
 
     /**
