@@ -1,28 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrimURL - Error</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Error - TrimURL</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>TrimURL</h1>
-        </header>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">&#128279;</span>
+            <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+        </div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+        </nav>
+    </header>
 
-        <main>
-            <div class="card error-card">
-                <h2>Oops!</h2>
-                <p>The URL you're looking for doesn't exist or has been removed.</p>
-                <a href="/" class="btn">Go Home</a>
+    <main>
+        <div class="container">
+            <div class="error-container">
+                <div class="error-icon">&#9888;</div>
+                <h1>Page Not Found</h1>
+                <p>The URL you're looking for doesn't exist or has expired.</p>
+                <a href="/" class="btn-primary">Go to Home</a>
             </div>
-        </main>
+        </div>
+    </main>
 
-        <footer>
-            <p>Built with Spring Boot & MongoDB</p>
-        </footer>
-    </div>
+    <footer>
+        <p>&copy; 2026 TrimURL - URL Shortener Service</p>
+    </footer>
 </body>
 </html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats - TrimURL</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">&#128279;</span>
+            <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+        </div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1>URL Statistics</h1>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">&#128279;</div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${url.clickCount}">0</span>
+                        <span class="stat-label">Total Clicks</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#128197;</div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${#temporals.format(url.createdAt, 'dd/MM/yyyy')}">-</span>
+                        <span class="stat-label">Created</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#128338;</div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${url.lastAccessed != null ? #temporals.format(url.lastAccessed, 'dd/MM/yyyy HH:mm') : '-'}">-</span>
+                        <span class="stat-label">Last Accessed</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>URL Details</h2>
+                <div class="card">
+                    <div class="detail-row">
+                        <label>Short URL:</label>
+                        <div class="copy-group">
+                            <input type="text" th:value="${url.shortUrl}" readonly>
+                            <button type="button" class="btn-copy" onclick="copyToClipboard()">Copy</button>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <label>Original URL:</label>
+                        <a th:href="${url.originalUrl}" th:text="${url.originalUrl}" target="_blank"></a>
+                    </div>
+                    <div class="detail-row">
+                        <label>Created:</label>
+                        <span th:text="${#temporals.format(url.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></span>
+                    </div>
+                    <div class="detail-row" th:if="${url.expiryDate != null}">
+                        <label>Expires:</label>
+                        <span th:text="${#temporals.format(url.expiryDate, 'dd/MM/yyyy HH:mm:ss')}"></span>
+                    </div>
+                    <div class="detail-row">
+                        <label>Created By IP:</label>
+                        <span th:text="${url.createdByIp}">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Click History</h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Timestamp</th>
+                                <th>IP Address</th>
+                                <th>Browser</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="click, iter : ${url.clicks}">
+                                <td th:text="${iter.count}">1</td>
+                                <td th:text="${#temporals.format(click.timestamp, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                                <td th:text="${click.ipAddress}">-</td>
+                                <td th:text="${click.userAgent}">-</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(url.clicks)}">
+                                <td colspan="4" class="empty-message">No clicks recorded yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 TrimURL - URL Shortener Service</p>
+    </footer>
+
+    <script>
+        function copyToClipboard() {
+            const copyText = document.querySelector('.copy-group input');
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert('Copied to clipboard!');
+        }
+    </script>
+</body>
+</html>

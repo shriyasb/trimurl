@@ -1,44 +1,105 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrimURL - Smart URL Shortener</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>TrimURL - URL Shortener</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>TrimURL</h1>
-            <p class="tagline">Smart URL Shortener with Analytics</p>
-        </header>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">&#128279;</span>
+            <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+        </div>
+        <nav>
+            <a href="/" class="active">Home</a>
+            <a href="/dashboard">Dashboard</a>
+        </nav>
+    </header>
 
-        <main>
+    <main>
+        <div class="container">
+            <div class="hero">
+                <h1>Shorten Your Links</h1>
+                <p>Create short, memorable URLs in seconds</p>
+            </div>
+
             <div class="card">
-                <div class="input-group">
-                    <input type="url" id="urlInput" placeholder="Paste your long URL here..." required>
-                    <button id="shortenBtn">Shorten</button>
-                </div>
+                <form id="shortenForm">
+                    <div class="form-group">
+                        <input type="url" id="originalUrl" name="url" placeholder="Enter your long URL here..." required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="customCode" name="customShortCode" placeholder="Custom short code (optional)">
+                    </div>
+                    <div class="form-group">
+                        <input type="datetime-local" id="expiryDate" name="expiryDate" placeholder="Expiry date (optional)">
+                    </div>
+                    <button type="submit" class="btn-primary">Shorten URL</button>
+                </form>
+
                 <div id="result" class="result hidden">
-                    <p class="label">Your shortened URL:</p>
-                    <div class="short-url">
-                        <input type="text" id="shortUrl" readonly>
-                        <button id="copyBtn" class="copy-btn">Copy</button>
+                    <div class="result-item">
+                        <label>Short URL:</label>
+                        <div class="copy-group">
+                            <input type="text" id="shortUrl" readonly>
+                            <button type="button" class="btn-copy" onclick="copyToClipboard()">Copy</button>
+                        </div>
                     </div>
                 </div>
+
                 <div id="error" class="error hidden"></div>
             </div>
+        </div>
+    </main>
 
-            <div class="links">
-                <a href="/dashboard" class="dashboard-link">View Analytics Dashboard</a>
-            </div>
-        </main>
+    <footer>
+        <p>&copy; 2026 TrimURL - URL Shortener Service</p>
+    </footer>
 
-        <footer>
-            <p>Built with Spring Boot & MongoDB</p>
-        </footer>
-    </div>
+    <script>
+        document.getElementById('shortenForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-    <script src="/js/app.js"></script>
+            const url = document.getElementById('originalUrl').value;
+            const customCode = document.getElementById('customCode').value;
+            const expiryDate = document.getElementById('expiryDate').value;
+
+            const request = { url: url };
+            if (customCode) request.customShortCode = customCode;
+            if (expiryDate) request.expiryDate = new Date(expiryDate).toISOString();
+
+            try {
+                const response = await fetch('/api/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(request)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('shortUrl').value = data.shortUrl;
+                    document.getElementById('result').classList.remove('hidden');
+                    document.getElementById('error').classList.add('hidden');
+                } else {
+                    document.getElementById('error').textContent = data.error || 'Error creating URL';
+                    document.getElementById('error').classList.remove('hidden');
+                    document.getElementById('result').classList.add('hidden');
+                }
+            } catch (err) {
+                document.getElementById('error').textContent = 'Network error';
+                document.getElementById('error').classList.remove('hidden');
+            }
+        });
+
+        function copyToClipboard() {
+            const copyText = document.getElementById('shortUrl');
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert('Copied to clipboard!');
+        }
+    </script>
 </body>
 </html>
