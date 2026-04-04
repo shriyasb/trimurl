@@ -36,6 +36,9 @@ public class UrlDocument {
     }
 
     public void addClick(Click click) {
+        if (click.getShortCode() == null) {
+            click.setShortCode(this.shortCode);
+        }
         this.clicks.add(click);
         this.clickCount++;
         this.lastAccessed = Instant.now();

@@ -141,17 +141,33 @@ public class UrlService {
 
         UrlDocument document = optDocument.get();
 
-        // Check if URL is expired
-        if (document.isExpired()) {
+        // Store original URL before any processing
+        String originalUrl = document.getOriginalUrl();
+
+        if (originalUrl == null || originalUrl.isEmpty()) {
             return null;
         }
 
-        // Track the click
-        Click click = new Click(shortCode, Instant.now(), ipAddress, extractBrowser(userAgent));
-        document.addClick(click);
-        urlRepository.save(document);
+        // Check if URL is expired
+        if (document.getExpiryDate() != null && Instant.now().isAfter(document.getExpiryDate())) {
+            return null;
+        }
 
-        return document.getOriginalUrl();
+        // Track the click - wrap in try-catch to prevent redirect failure
+        try {
+            Click click = new Click(shortCode, Instant.now(), ipAddress, extractBrowser(userAgent));
+            if (document.getClicks() == null) {
+                document.setClicks(new java.util.ArrayList<>());
+            }
+            document.getClicks().add(click);
+            document.setClickCount(document.getClickCount() + 1);
+            document.setLastAccessed(Instant.now());
+            urlRepository.save(document);
+        } catch (Exception e) {
+            // Log error but don't break redirect
+        }
+
+        return originalUrl;
     }
 
     /**
