@@ -7,29 +7,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MongoDB document representing a shortened URL.
- * Contains the original URL, short code, creation timestamp, and click analytics.
+ * URL Document entity for MongoDB.
+ * Stores original URL and click tracking information.
  */
 @Document(collection = "urls")
 public class UrlDocument {
+
     @Id
     private String id;
     private String shortCode;
     private String originalUrl;
     private Instant createdAt;
-    private List<Click> clicks;
+    private Instant expiryDate;
+    private int clickCount;
+    private Instant lastAccessed;
+    private String createdByIp;
+    private List<Click> clicks = new ArrayList<>();
+    private String qrCode;
 
     public UrlDocument() {
-        this.clicks = new ArrayList<>();
     }
 
     public UrlDocument(String shortCode, String originalUrl, Instant createdAt) {
         this.shortCode = shortCode;
         this.originalUrl = originalUrl;
         this.createdAt = createdAt;
-        this.clicks = new ArrayList<>();
+        this.clickCount = 0;
     }
 
+    public void addClick(Click click) {
+        this.clicks.add(click);
+        this.clickCount++;
+        this.lastAccessed = Instant.now();
+    }
+
+    // Getters and Setters
     public String getId() {
         return id;
     }
@@ -62,6 +74,38 @@ public class UrlDocument {
         this.createdAt = createdAt;
     }
 
+    public Instant getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Instant expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public int getClickCount() {
+        return clickCount;
+    }
+
+    public void setClickCount(int clickCount) {
+        this.clickCount = clickCount;
+    }
+
+    public Instant getLastAccessed() {
+        return lastAccessed;
+    }
+
+    public void setLastAccessed(Instant lastAccessed) {
+        this.lastAccessed = lastAccessed;
+    }
+
+    public String getCreatedByIp() {
+        return createdByIp;
+    }
+
+    public void setCreatedByIp(String createdByIp) {
+        this.createdByIp = createdByIp;
+    }
+
     public List<Click> getClicks() {
         return clicks;
     }
@@ -70,7 +114,15 @@ public class UrlDocument {
         this.clicks = clicks;
     }
 
-    public void addClick(Click click) {
-        this.clicks.add(click);
+    public String getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(String qrCode) {
+        this.qrCode = qrCode;
+    }
+
+    public boolean isExpired() {
+        return expiryDate != null && Instant.now().isAfter(expiryDate);
     }
 }

@@ -1,6 +1,7 @@
 package com.trimurl.model;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Response object for shortened URL data.
@@ -10,7 +11,12 @@ public class UrlResponse {
     private String shortUrl;
     private String originalUrl;
     private Instant createdAt;
-    private int totalClicks;
+    private Instant expiryDate;
+    private int clickCount;
+    private Instant lastAccessed;
+    private String createdByIp;
+    private String qrCode;
+    private List<Click> clicks;
 
     public UrlResponse() {
     }
@@ -20,7 +26,7 @@ public class UrlResponse {
         this.shortUrl = shortUrl;
         this.originalUrl = originalUrl;
         this.createdAt = createdAt;
-        this.totalClicks = totalClicks;
+        this.clickCount = totalClicks;
     }
 
     public String getShortCode() {
@@ -55,11 +61,51 @@ public class UrlResponse {
         this.createdAt = createdAt;
     }
 
-    public int getTotalClicks() {
-        return totalClicks;
+    public Instant getExpiryDate() {
+        return expiryDate;
     }
 
-    public void setTotalClicks(int totalClicks) {
-        this.totalClicks = totalClicks;
+    public void setExpiryDate(Instant expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public int getClickCount() {
+        return clickCount;
+    }
+
+    public void setClickCount(int clickCount) {
+        this.clickCount = clickCount;
+    }
+
+    public Instant getLastAccessed() {
+        return lastAccessed;
+    }
+
+    public void setLastAccessed(Instant lastAccessed) {
+        this.lastAccessed = lastAccessed;
+    }
+
+    public String getCreatedByIp() {
+        return createdByIp;
+    }
+
+    public void setCreatedByIp(String createdByIp) {
+        this.createdByIp = createdByIp;
+    }
+
+    public String getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(String qrCode) {
+        this.qrCode = qrCode;
+    }
+
+    public List<Click> getClicks() {
+        return clicks;
+    }
+
+    public void setClicks(List<Click> clicks) {
+        this.clicks = clicks;
     }
 }

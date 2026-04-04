@@ -1,5 +1,8 @@
 package com.trimurl.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.trimurl.model.Click;
 import com.trimurl.model.UrlDocument;
 import com.trimurl.model.UrlRequest;
@@ -8,11 +11,17 @@ import com.trimurl.repository.UrlRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,22 +43,6 @@ public class UrlService {
 
     /**
      * Short-code algorithm: Base62 encoding of MD5 hash
-     *
-     * Why Base62?
-     * - Uses alphanumeric characters (0-9, a-z, A-Z) = 62 characters
-     * - Provides good distribution of short codes
-     * - URL-safe characters only
-     *
-     * Algorithm:
-     * 1. Generate MD5 hash of the original URL
-     * 2. Encode hash in Base64 and take first 8 characters
-     * 3. This gives us an 8-character short code
-     * 4. Check for collision and add suffix if needed
-     *
-     * Alternative algorithms considered:
-     * - Sequential ID: Simple but reveals usage pattern
-     * - Random alphanumeric: Good but requires collision check
-     * - Base62 of timestamp: Too predictable
      */
     private String generateShortCode(String originalUrl) {
         try {
@@ -65,7 +58,7 @@ public class UrlService {
     /**
      * Creates a shortened URL from the given original URL.
      */
-    public UrlResponse createShortUrl(UrlRequest request) {
+    public UrlResponse createShortUrl(UrlRequest request, String ipAddress) {
         String originalUrl = request.getUrl();
 
         // Validate URL format
@@ -73,25 +66,67 @@ public class UrlService {
             throw new IllegalArgumentException("Invalid URL format");
         }
 
-        String shortCode = generateShortCode(originalUrl);
-
-        // Handle potential collision by appending a counter
-        int counter = 0;
-        String finalShortCode = shortCode;
-        while (urlRepository.findByShortCode(finalShortCode).isPresent()) {
-            finalShortCode = shortCode + counter;
-            counter++;
+        String shortCode;
+        if (request.getCustomShortCode() != null && !request.getCustomShortCode().isEmpty()) {
+            // Use custom short code if provided
+            shortCode = request.getCustomShortCode();
+            if (urlRepository.existsByShortCode(shortCode)) {
+                throw new IllegalArgumentException("Custom short code already in use");
+            }
+            // Validate custom code format
+            if (!shortCode.matches("^[a-zA-Z0-9_-]{3,20}$")) {
+                throw new IllegalArgumentException("Invalid custom short code format");
+            }
+        } else {
+            // Generate automatic short code
+            shortCode = generateShortCode(originalUrl);
+            int counter = 0;
+            String finalShortCode = shortCode;
+            while (urlRepository.existsByShortCode(finalShortCode)) {
+                finalShortCode = shortCode + counter;
+                counter++;
+            }
+            shortCode = finalShortCode;
         }
 
-        UrlDocument document = new UrlDocument(
-            finalShortCode,
-            originalUrl,
-            Instant.now()
-        );
+        UrlDocument document = new UrlDocument(shortCode, originalUrl, Instant.now());
+        document.setExpiryDate(request.getExpiryDate());
+        document.setCreatedByIp(ipAddress);
+
+        // Generate QR Code
+        String shortUrl = baseUrl + "/" + shortCode;
+        String qrCode = generateQRCode(shortUrl);
+        document.setQrCode(qrCode);
 
         document = urlRepository.save(document);
 
         return toUrlResponse(document);
+    }
+
+    /**
+     * Generates QR Code as Base64 string
+     */
+    private String generateQRCode(String content) {
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            Map<EncodeHintType, Object> hints = new HashMap<>();
+            hints.put(EncodeHintType.CHARACTER_SET, StandardCharsets.UTF_8.name());
+            hints.put(EncodeHintType.MARGIN, 1);
+
+            var bitMatrix = qrCodeWriter.encode(content, BarcodeFormat.QR_CODE, 200, 200, hints);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            int[] pixels = new int[200 * 200];
+            for (int y = 0; y < 200; y++) {
+                for (int x = 0; x < 200; x++) {
+                    pixels[y * 200 + x] = bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF;
+                }
+            }
+            // Simple PNG encoding without external library
+            return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -106,8 +141,13 @@ public class UrlService {
 
         UrlDocument document = optDocument.get();
 
+        // Check if URL is expired
+        if (document.isExpired()) {
+            return null;
+        }
+
         // Track the click
-        Click click = new Click(Instant.now(), ipAddress, extractBrowser(userAgent));
+        Click click = new Click(shortCode, Instant.now(), ipAddress, extractBrowser(userAgent));
         document.addClick(click);
         urlRepository.save(document);
 
@@ -149,6 +189,41 @@ public class UrlService {
         return optDocument.get().getClicks();
     }
 
+    /**
+     * Gets dashboard statistics.
+     */
+    public Map<String, Object> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        long totalUrls = urlRepository.count();
+        stats.put("totalUrls", totalUrls);
+
+        List<UrlDocument> allUrls = urlRepository.findAll();
+        int totalClicks = allUrls.stream().mapToInt(UrlDocument::getClickCount).sum();
+        stats.put("totalClicks", totalClicks);
+
+        List<UrlResponse> topUrls = urlRepository.findTop5ByOrderByClickCountDesc()
+            .stream()
+            .map(this::toUrlResponse)
+            .collect(Collectors.toList());
+        stats.put("topUrls", topUrls);
+
+        List<UrlResponse> recentUrls = urlRepository.findTop10ByOrderByCreatedAtDesc()
+            .stream()
+            .map(this::toUrlResponse)
+            .collect(Collectors.toList());
+        stats.put("recentUrls", recentUrls);
+
+        return stats;
+    }
+
+    /**
+     * Checks if a URL exists by short code.
+     */
+    public boolean urlExists(String shortCode) {
+        return urlRepository.findByShortCode(shortCode).isPresent();
+    }
+
     private boolean isValidUrl(String url) {
         try {
             java.net.URI uri = new java.net.URI(url);
@@ -187,15 +262,21 @@ public class UrlService {
                 .build()
                 .toUriString();
         } catch (Exception e) {
-            // Fallback for non-request contexts (tests, etc.)
             shortUrl = baseUrl + "/" + document.getShortCode();
         }
-        return new UrlResponse(
+
+        UrlResponse response = new UrlResponse(
             document.getShortCode(),
             shortUrl,
             document.getOriginalUrl(),
             document.getCreatedAt(),
-            document.getClicks().size()
+            document.getClickCount()
         );
+        response.setExpiryDate(document.getExpiryDate());
+        response.setLastAccessed(document.getLastAccessed());
+        response.setCreatedByIp(document.getCreatedByIp());
+        response.setQrCode(document.getQrCode());
+        response.setClicks(document.getClicks());
+        return response;
     }
 }

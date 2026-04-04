@@ -34,9 +34,10 @@ public class UrlController {
      */
     @PostMapping("/api/shorten")
     @ResponseBody
-    public ResponseEntity<?> createShortUrl(@Valid @RequestBody UrlRequest request) {
+    public ResponseEntity<?> createShortUrl(@Valid @RequestBody UrlRequest request, HttpServletRequest httpRequest) {
         try {
-            UrlResponse response = urlService.createShortUrl(request);
+            String ipAddress = getClientIp(httpRequest);
+            UrlResponse response = urlService.createShortUrl(request, ipAddress);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, String> error = new HashMap<>();
@@ -89,6 +90,32 @@ public class UrlController {
     }
 
     /**
+     * API: Get stats for a specific URL (simplified endpoint)
+     */
+    @GetMapping("/api/stats/{shortCode}")
+    @ResponseBody
+    public ResponseEntity<?> getStats(@PathVariable String shortCode) {
+        UrlResponse analytics = urlService.getUrlAnalytics(shortCode);
+        if (analytics == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "URL not found");
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(analytics);
+    }
+
+    /**
+     * API: Check if short code exists
+     */
+    @GetMapping("/api/exists/{shortCode}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Boolean>> checkExists(@PathVariable String shortCode) {
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", urlService.urlExists(shortCode));
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Redirect: Handle short URL access
      */
     @GetMapping("/{shortCode}")
@@ -106,13 +133,29 @@ public class UrlController {
     }
 
     /**
-     * Web: Dashboard page
+     * Web: Dashboard page with statistics
      */
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        List<UrlResponse> urls = urlService.getAllUrls();
-        model.addAttribute("urls", urls);
+        Map<String, Object> stats = urlService.getDashboardStats();
+        model.addAttribute("totalUrls", stats.get("totalUrls"));
+        model.addAttribute("totalClicks", stats.get("totalClicks"));
+        model.addAttribute("topUrls", stats.get("topUrls"));
+        model.addAttribute("recentUrls", stats.get("recentUrls"));
         return "dashboard";
+    }
+
+    /**
+     * Web: Stats page for specific URL
+     */
+    @GetMapping("/stats/{shortCode}")
+    public String stats(@PathVariable String shortCode, Model model) {
+        UrlResponse analytics = urlService.getUrlAnalytics(shortCode);
+        if (analytics == null) {
+            return "redirect:/error";
+        }
+        model.addAttribute("url", analytics);
+        return "stats";
     }
 
     /**

@@ -1,35 +1,39 @@
 package com.trimurl.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 
 /**
- * Represents a single click event on a shortened URL.
- * Stores analytics data including timestamp, IP address, and browser info.
+ * Click entity to track URL access history.
  */
 public class Click {
-    @Id
-    private String id;
+
+    private String shortCode;
     private Instant timestamp;
     private String ipAddress;
-    private String browser;
+    private String userAgent;
 
     public Click() {
     }
 
-    public Click(Instant timestamp, String ipAddress, String browser) {
+    public Click(Instant timestamp, String ipAddress, String userAgent) {
         this.timestamp = timestamp;
         this.ipAddress = ipAddress;
-        this.browser = browser;
+        this.userAgent = userAgent;
     }
 
-    public String getId() {
-        return id;
+    public Click(String shortCode, Instant timestamp, String ipAddress, String userAgent) {
+        this.shortCode = shortCode;
+        this.timestamp = timestamp;
+        this.ipAddress = ipAddress;
+        this.userAgent = userAgent;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getShortCode() {
+        return shortCode;
+    }
+
+    public void setShortCode(String shortCode) {
+        this.shortCode = shortCode;
     }
 
     public Instant getTimestamp() {
@@ -48,11 +52,11 @@ public class Click {
         this.ipAddress = ipAddress;
     }
 
-    public String getBrowser() {
-        return browser;
+    public String getUserAgent() {
+        return userAgent;
     }
 
-    public void setBrowser(String browser) {
-        this.browser = browser;
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
     }
 }
