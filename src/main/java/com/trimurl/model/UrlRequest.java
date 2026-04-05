@@ -2,6 +2,8 @@ package com.trimurl.model;
 
 import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 /**
  * Request for creating shortened URLs.
@@ -12,7 +14,8 @@ public class UrlRequest {
     private String url;
 
     private String customShortCode;
-    private Instant expiryDate;
+
+    private String expiryDateStr;
 
     public UrlRequest() {
     }
@@ -23,6 +26,18 @@ public class UrlRequest {
     public String getCustomShortCode() { return customShortCode; }
     public void setCustomShortCode(String customShortCode) { this.customShortCode = customShortCode; }
 
-    public Instant getExpiryDate() { return expiryDate; }
-    public void setExpiryDate(Instant expiryDate) { this.expiryDate = expiryDate; }
+    public String getExpiryDateStr() { return expiryDateStr; }
+    public void setExpiryDateStr(String expiryDateStr) { this.expiryDateStr = expiryDateStr; }
+
+    public Instant getExpiryDate() {
+        if (expiryDateStr == null || expiryDateStr.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            LocalDateTime ldt = LocalDateTime.parse(expiryDateStr);
+            return ldt.atZone(ZoneId.systemDefault()).toInstant();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
