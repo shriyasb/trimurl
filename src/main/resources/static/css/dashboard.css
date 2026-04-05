@@ -50,7 +50,8 @@ header {
 
 nav {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
+    align-items: center;
 }
 
 nav a {
@@ -71,6 +72,107 @@ nav a.active {
     color: white;
 }
 
+.btn-logout {
+    background: transparent;
+    border: 1px solid #667eea;
+    color: #667eea;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* Chart Container */
+.chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Test Links */
+.test-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.test-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.test-link-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.short-link {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.original-link {
+    font-size: 0.85rem;
+    color: #666;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-test {
+    padding: 0.5rem 1rem;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.btn-test:hover {
+    background: #5568d3;
+}
+
+.test-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.test-form input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.test-form .btn-primary {
+    width: auto;
+    padding: 0.75rem 1.5rem;
+}
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background: #667eea;
+    color: white;
+}
+
 /* Main Container */
 main {
     flex: 1;
@@ -86,7 +188,7 @@ main {
 h1 {
     color: white;
     font-size: 2rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     text-align: center;
 }
 
@@ -94,6 +196,13 @@ h2 {
     color: white;
     font-size: 1.3rem;
     margin-bottom: 1rem;
+}
+
+.subtitle {
+    color: white;
+    opacity: 0.9;
+    text-align: center;
+    margin-bottom: 1.5rem;
 }
 
 /* Stats Grid */
@@ -295,6 +404,84 @@ h2 {
     text-decoration: underline;
 }
 
+/* Test Page Styles */
+.test-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.test-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.test-link-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.short-link {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.original-link {
+    color: #666;
+    font-size: 0.85rem;
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-test {
+    padding: 0.75rem 1.5rem;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.btn-test:hover {
+    background: #5568d3;
+}
+
+.test-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.test-form input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.test-form .btn-primary {
+    width: auto;
+    padding: 0.75rem 1.5rem;
+}
+
+/* Chart Container */
+.chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 300px;
+}
+
 /* Footer */
 footer {
     text-align: center;
@@ -302,6 +489,83 @@ footer {
     color: white;
     opacity: 0.8;
     font-size: 0.9rem;
+}
+
+/* Test Links */
+.test-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.test-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.test-link-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.test-link-info .short-link {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.test-link-info .original-link {
+    font-size: 0.85rem;
+    color: #666;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-test {
+    padding: 0.5rem 1rem;
+    background: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.btn-test:hover {
+    background: #45a049;
+}
+
+.test-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.test-form input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.test-form .btn-primary {
+    width: auto;
+    padding: 0.75rem 1.5rem;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
 }
 
 /* Responsive Design */
@@ -323,5 +587,11 @@ footer {
 
     .truncate {
         max-width: 150px;
+    }
+
+    .test-link {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
 }

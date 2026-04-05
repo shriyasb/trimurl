@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 
 /**
- * Request object for creating shortened URLs.
+ * Request for creating shortened URLs.
  */
 public class UrlRequest {
 
@@ -12,37 +12,17 @@ public class UrlRequest {
     private String url;
 
     private String customShortCode;
-
     private Instant expiryDate;
 
     public UrlRequest() {
     }
 
-    public UrlRequest(String url) {
-        this.url = url;
-    }
+    public String getUrl() { return url; }
+    public void setUrl(String url) { this.url = url; }
 
-    public String getUrl() {
-        return url;
-    }
+    public String getCustomShortCode() { return customShortCode; }
+    public void setCustomShortCode(String customShortCode) { this.customShortCode = customShortCode; }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getCustomShortCode() {
-        return customShortCode;
-    }
-
-    public void setCustomShortCode(String customShortCode) {
-        this.customShortCode = customShortCode;
-    }
-
-    public Instant getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Instant expiryDate) {
-        this.expiryDate = expiryDate;
-    }
+    public Instant getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(Instant expiryDate) { this.expiryDate = expiryDate; }
 }

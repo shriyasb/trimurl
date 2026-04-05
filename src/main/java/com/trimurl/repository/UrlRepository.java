@@ -7,19 +7,15 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository interface for URL documents in MongoDB.
- * Provides CRUD operations and custom query methods.
+ * Repository for URL documents.
  */
 public interface UrlRepository extends MongoRepository<UrlDocument, String> {
     Optional<UrlDocument> findByShortCode(String shortCode);
-
     boolean existsByShortCode(String shortCode);
+    List<UrlDocument> findByUserId(String userId);
 
-    @Query(sort = "{ 'createdAt' : -1 }")
-    List<UrlDocument> findTop5ByOrderByClickCountDesc();
+    @Query(sort = "{ 'totalClicks' : -1 }")
+    List<UrlDocument> findTop5ByUserIdOrderByTotalClicksDesc(String userId);
 
-    @Query(sort = "{ 'createdAt' : -1 }")
-    List<UrlDocument> findTop10ByOrderByCreatedAtDesc();
-
-    long count();
+    long countByUserId(String userId);
 }

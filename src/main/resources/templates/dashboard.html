@@ -15,12 +15,16 @@
         <nav>
             <a href="/">Home</a>
             <a href="/dashboard" class="active">Dashboard</a>
+            <a href="/test">Test</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
         </nav>
     </header>
 
     <main>
         <div class="container">
-            <h1>Analytics Dashboard</h1>
+            <h1>Your Dashboard</h1>
 
             <div class="stats-grid">
                 <div class="stat-card">
@@ -54,11 +58,11 @@
                         </thead>
                         <tbody>
                             <tr th:each="url : ${topUrls}">
-                                <td><a th:href="@{'/' + ${url.shortCode}}" th:text="${url.shortUrl}" target="_blank"></a></td>
+                                <td><a th:href="@{'/r/' + ${url.shortCode}}" th:text="${url.shortUrl}" target="_blank"></a></td>
                                 <td class="truncate" th:text="${url.originalUrl}"></td>
                                 <td th:text="${url.clickCount}">0</td>
                                 <td th:text="${#temporals.format(url.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td><a th:href="@{'/stats/' + ${url.shortCode}}" class="btn-small">View Stats</a></td>
+                                <td><a th:href="@{'/analytics/' + ${url.shortCode}}" class="btn-small">Analytics</a></td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(topUrls)}">
                                 <td colspan="5" class="empty-message">No URLs yet. Create your first short URL!</td>
@@ -69,7 +73,7 @@
             </div>
 
             <div class="section">
-                <h2>Recently Created Links</h2>
+                <h2>All Your Links</h2>
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
@@ -82,14 +86,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="url : ${recentUrls}">
-                                <td><a th:href="@{'/' + ${url.shortCode}}" th:text="${url.shortUrl}" target="_blank"></a></td>
+                            <tr th:each="url : ${urls}">
+                                <td><a th:href="@{'/r/' + ${url.shortCode}}" th:text="${url.shortUrl}" target="_blank"></a></td>
                                 <td class="truncate" th:text="${url.originalUrl}"></td>
                                 <td th:text="${url.clickCount}">0</td>
                                 <td th:text="${#temporals.format(url.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td><a th:href="@{'/stats/' + ${url.shortCode}}" class="btn-small">View Stats</a></td>
+                                <td><a th:href="@{'/analytics/' + ${url.shortCode}}" class="btn-small">Analytics</a></td>
                             </tr>
-                            <tr th:if="${#lists.isEmpty(recentUrls)}">
+                            <tr th:if="${#lists.isEmpty(urls)}">
                                 <td colspan="5" class="empty-message">No URLs yet. Create your first short URL!</td>
                             </tr>
                         </tbody>

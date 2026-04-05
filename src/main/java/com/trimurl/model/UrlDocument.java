@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * URL Document entity for MongoDB.
- * Stores original URL and click tracking information.
  */
 @Document(collection = "urls")
 public class UrlDocument {
@@ -19,11 +18,10 @@ public class UrlDocument {
     private String originalUrl;
     private Instant createdAt;
     private Instant expiryDate;
-    private int clickCount;
+    private int totalClicks;
+    private List<Instant> clickHistory = new ArrayList<>();
     private Instant lastAccessed;
-    private String createdByIp;
-    private List<Click> clicks = new ArrayList<>();
-    private String qrCode;
+    private String userId;
 
     public UrlDocument() {
     }
@@ -32,98 +30,42 @@ public class UrlDocument {
         this.shortCode = shortCode;
         this.originalUrl = originalUrl;
         this.createdAt = createdAt;
-        this.clickCount = 0;
+        this.totalClicks = 0;
     }
 
-    public void addClick(Click click) {
-        if (click.getShortCode() == null) {
-            click.setShortCode(this.shortCode);
-        }
-        this.clicks.add(click);
-        this.clickCount++;
+    public void addClick(Instant timestamp) {
+        this.clickHistory.add(timestamp);
+        this.totalClicks++;
         this.lastAccessed = Instant.now();
     }
 
     // Getters and Setters
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getShortCode() { return shortCode; }
+    public void setShortCode(String shortCode) { this.shortCode = shortCode; }
 
-    public String getShortCode() {
-        return shortCode;
-    }
+    public String getOriginalUrl() { return originalUrl; }
+    public void setOriginalUrl(String originalUrl) { this.originalUrl = originalUrl; }
 
-    public void setShortCode(String shortCode) {
-        this.shortCode = shortCode;
-    }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
-    public String getOriginalUrl() {
-        return originalUrl;
-    }
+    public Instant getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(Instant expiryDate) { this.expiryDate = expiryDate; }
 
-    public void setOriginalUrl(String originalUrl) {
-        this.originalUrl = originalUrl;
-    }
+    public int getTotalClicks() { return totalClicks; }
+    public void setTotalClicks(int totalClicks) { this.totalClicks = totalClicks; }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    public List<Instant> getClickHistory() { return clickHistory; }
+    public void setClickHistory(List<Instant> clickHistory) { this.clickHistory = clickHistory; }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
+    public Instant getLastAccessed() { return lastAccessed; }
+    public void setLastAccessed(Instant lastAccessed) { this.lastAccessed = lastAccessed; }
 
-    public Instant getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Instant expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public int getClickCount() {
-        return clickCount;
-    }
-
-    public void setClickCount(int clickCount) {
-        this.clickCount = clickCount;
-    }
-
-    public Instant getLastAccessed() {
-        return lastAccessed;
-    }
-
-    public void setLastAccessed(Instant lastAccessed) {
-        this.lastAccessed = lastAccessed;
-    }
-
-    public String getCreatedByIp() {
-        return createdByIp;
-    }
-
-    public void setCreatedByIp(String createdByIp) {
-        this.createdByIp = createdByIp;
-    }
-
-    public List<Click> getClicks() {
-        return clicks;
-    }
-
-    public void setClicks(List<Click> clicks) {
-        this.clicks = clicks;
-    }
-
-    public String getQrCode() {
-        return qrCode;
-    }
-
-    public void setQrCode(String qrCode) {
-        this.qrCode = qrCode;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public boolean isExpired() {
         return expiryDate != null && Instant.now().isAfter(expiryDate);

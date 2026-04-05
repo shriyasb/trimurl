@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TrimURL</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">&#128279;</span>
+            <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="card auth-card">
+                <h1>Create Account</h1>
+                <p class="subtitle">Start shortening URLs</p>
+
+                <div th:if="${error}" class="alert error" th:text="${error}"></div>
+
+                <form th:action="@{/register}" method="post">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email address" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" placeholder="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </form>
+
+                <p class="auth-switch">
+                    Already have an account? <a th:href="@{/login}">Sign In</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 TrimURL - URL Shortener Service</p>
+    </footer>
+</body>
+</html>

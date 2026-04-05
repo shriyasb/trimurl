@@ -1,10 +1,9 @@
 package com.trimurl.model;
 
 import java.time.Instant;
-import java.util.List;
 
 /**
- * Response object for shortened URL data.
+ * Response for URL data.
  */
 public class UrlResponse {
     private String shortCode;
@@ -14,9 +13,8 @@ public class UrlResponse {
     private Instant expiryDate;
     private int clickCount;
     private Instant lastAccessed;
-    private String createdByIp;
     private String qrCode;
-    private List<Click> clicks;
+    private String userId;
 
     public UrlResponse() {
     }
@@ -29,83 +27,30 @@ public class UrlResponse {
         this.clickCount = totalClicks;
     }
 
-    public String getShortCode() {
-        return shortCode;
-    }
+    public String getShortCode() { return shortCode; }
+    public void setShortCode(String shortCode) { this.shortCode = shortCode; }
 
-    public void setShortCode(String shortCode) {
-        this.shortCode = shortCode;
-    }
+    public String getShortUrl() { return shortUrl; }
+    public void setShortUrl(String shortUrl) { this.shortUrl = shortUrl; }
 
-    public String getShortUrl() {
-        return shortUrl;
-    }
+    public String getOriginalUrl() { return originalUrl; }
+    public void setOriginalUrl(String originalUrl) { this.originalUrl = originalUrl; }
 
-    public void setShortUrl(String shortUrl) {
-        this.shortUrl = shortUrl;
-    }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
-    public String getOriginalUrl() {
-        return originalUrl;
-    }
+    public Instant getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(Instant expiryDate) { this.expiryDate = expiryDate; }
 
-    public void setOriginalUrl(String originalUrl) {
-        this.originalUrl = originalUrl;
-    }
+    public int getClickCount() { return clickCount; }
+    public void setClickCount(int clickCount) { this.clickCount = clickCount; }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    public Instant getLastAccessed() { return lastAccessed; }
+    public void setLastAccessed(Instant lastAccessed) { this.lastAccessed = lastAccessed; }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
+    public String getQrCode() { return qrCode; }
+    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
 
-    public Instant getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Instant expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-
-    public int getClickCount() {
-        return clickCount;
-    }
-
-    public void setClickCount(int clickCount) {
-        this.clickCount = clickCount;
-    }
-
-    public Instant getLastAccessed() {
-        return lastAccessed;
-    }
-
-    public void setLastAccessed(Instant lastAccessed) {
-        this.lastAccessed = lastAccessed;
-    }
-
-    public String getCreatedByIp() {
-        return createdByIp;
-    }
-
-    public void setCreatedByIp(String createdByIp) {
-        this.createdByIp = createdByIp;
-    }
-
-    public String getQrCode() {
-        return qrCode;
-    }
-
-    public void setQrCode(String qrCode) {
-        this.qrCode = qrCode;
-    }
-
-    public List<Click> getClicks() {
-        return clicks;
-    }
-
-    public void setClicks(List<Click> clicks) {
-        this.clicks = clicks;
-    }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 }

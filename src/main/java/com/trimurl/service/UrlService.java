@@ -3,7 +3,6 @@ package com.trimurl.service;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.qrcode.QRCodeWriter;
-import com.trimurl.model.Click;
 import com.trimurl.model.UrlDocument;
 import com.trimurl.model.UrlRequest;
 import com.trimurl.model.UrlResponse;
@@ -13,21 +12,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service layer for URL shortener operations.
- * Handles URL creation, redirection, and analytics tracking.
+ * Service for URL shortener operations.
  */
 @Service
 public class UrlService {
@@ -41,9 +36,6 @@ public class UrlService {
         this.urlRepository = urlRepository;
     }
 
-    /**
-     * Short-code algorithm: Base62 encoding of MD5 hash
-     */
     private String generateShortCode(String originalUrl) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -55,30 +47,23 @@ public class UrlService {
         }
     }
 
-    /**
-     * Creates a shortened URL from the given original URL.
-     */
-    public UrlResponse createShortUrl(UrlRequest request, String ipAddress) {
+    public UrlResponse createShortUrl(UrlRequest request, String userId) {
         String originalUrl = request.getUrl();
 
-        // Validate URL format
         if (!isValidUrl(originalUrl)) {
             throw new IllegalArgumentException("Invalid URL format");
         }
 
         String shortCode;
         if (request.getCustomShortCode() != null && !request.getCustomShortCode().isEmpty()) {
-            // Use custom short code if provided
             shortCode = request.getCustomShortCode();
             if (urlRepository.existsByShortCode(shortCode)) {
                 throw new IllegalArgumentException("Custom short code already in use");
             }
-            // Validate custom code format
             if (!shortCode.matches("^[a-zA-Z0-9_-]{3,20}$")) {
                 throw new IllegalArgumentException("Invalid custom short code format");
             }
         } else {
-            // Generate automatic short code
             shortCode = generateShortCode(originalUrl);
             int counter = 0;
             String finalShortCode = shortCode;
@@ -91,21 +76,17 @@ public class UrlService {
 
         UrlDocument document = new UrlDocument(shortCode, originalUrl, Instant.now());
         document.setExpiryDate(request.getExpiryDate());
-        document.setCreatedByIp(ipAddress);
+        document.setUserId(userId);
 
         // Generate QR Code
-        String shortUrl = baseUrl + "/" + shortCode;
+        String shortUrl = baseUrl + "/r/" + shortCode;
         String qrCode = generateQRCode(shortUrl);
         document.setQrCode(qrCode);
 
         document = urlRepository.save(document);
-
         return toUrlResponse(document);
     }
 
-    /**
-     * Generates QR Code as Base64 string
-     */
     private String generateQRCode(String content) {
         try {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -122,17 +103,13 @@ public class UrlService {
                     pixels[y * 200 + x] = bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF;
                 }
             }
-            // Simple PNG encoding without external library
             return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             return null;
         }
     }
 
-    /**
-     * Finds and redirects to the original URL.
-     */
-    public String redirectToOriginal(String shortCode, String ipAddress, String userAgent) {
+    public String redirectToOriginal(String shortCode) {
         Optional<UrlDocument> optDocument = urlRepository.findByShortCode(shortCode);
 
         if (optDocument.isEmpty()) {
@@ -141,91 +118,73 @@ public class UrlService {
 
         UrlDocument document = optDocument.get();
 
-        // Simply return the original URL - skip all extra processing for now
-        String originalUrl = document.getOriginalUrl();
-
-        if (originalUrl != null && !originalUrl.isEmpty()) {
-            // Simple click tracking - use the OLD 3-argument constructor that worked
-            try {
-                Click click = new Click(Instant.now(), ipAddress, extractBrowser(userAgent));
-                document.getClicks().add(click);
-                urlRepository.save(document);
-            } catch (Exception e) {
-                // Ignore errors, still return URL
-            }
-        }
-
-        return originalUrl;
-    }
-
-    /**
-     * Gets all shortened URLs for the dashboard.
-     */
-    public List<UrlResponse> getAllUrls() {
-        return urlRepository.findAll().stream()
-            .map(this::toUrlResponse)
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Gets analytics for a specific short code.
-     */
-    public UrlResponse getUrlAnalytics(String shortCode) {
-        Optional<UrlDocument> optDocument = urlRepository.findByShortCode(shortCode);
-
-        if (optDocument.isEmpty()) {
+        if (document.isExpired()) {
             return null;
         }
 
-        return toUrlResponse(optDocument.get());
+        // Track click
+        Instant now = Instant.now();
+        document.addClick(now);
+        urlRepository.save(document);
+
+        return document.getOriginalUrl();
     }
 
-    /**
-     * Gets all clicks for a specific short code.
-     */
-    public List<Click> getClicks(String shortCode) {
-        Optional<UrlDocument> optDocument = urlRepository.findByShortCode(shortCode);
+    public List<UrlResponse> getUserUrls(String userId) {
+        return urlRepository.findByUserId(userId).stream()
+            .map(this::toUrlResponse)
+            .collect(Collectors.toList());
+    }
 
+    public List<UrlResponse> getTopUrls(String userId) {
+        return urlRepository.findTop5ByUserIdOrderByTotalClicksDesc(userId).stream()
+            .map(this::toUrlResponse)
+            .collect(Collectors.toList());
+    }
+
+    public long getTotalUrls(String userId) {
+        return urlRepository.countByUserId(userId);
+    }
+
+    public long getTotalClicks(String userId) {
+        return urlRepository.findByUserId(userId).stream()
+            .mapToLong(UrlDocument::getTotalClicks)
+            .sum();
+    }
+
+    public UrlResponse getUrlAnalytics(String shortCode, String userId) {
+        Optional<UrlDocument> optDocument = urlRepository.findByShortCode(shortCode);
         if (optDocument.isEmpty()) {
             return null;
         }
-
-        return optDocument.get().getClicks();
+        UrlDocument doc = optDocument.get();
+        // Only allow owner to view analytics
+        if (!doc.getUserId().equals(userId)) {
+            return null;
+        }
+        return toUrlResponse(doc);
     }
 
-    /**
-     * Gets dashboard statistics.
-     */
-    public Map<String, Object> getDashboardStats() {
-        Map<String, Object> stats = new HashMap<>();
+    public Map<String, Long> getClickStatsByHour(String shortCode, String userId) {
+        Optional<UrlDocument> optDocument = urlRepository.findByShortCode(shortCode);
+        if (optDocument.isEmpty()) {
+            return null;
+        }
+        UrlDocument doc = optDocument.get();
+        if (!doc.getUserId().equals(userId)) {
+            return null;
+        }
 
-        long totalUrls = urlRepository.count();
-        stats.put("totalUrls", totalUrls);
+        Map<String, Long> stats = new LinkedHashMap<>();
+        List<Instant> history = doc.getClickHistory();
 
-        List<UrlDocument> allUrls = urlRepository.findAll();
-        int totalClicks = allUrls.stream().mapToInt(UrlDocument::getClickCount).sum();
-        stats.put("totalClicks", totalClicks);
-
-        List<UrlResponse> topUrls = urlRepository.findTop5ByOrderByClickCountDesc()
-            .stream()
-            .map(this::toUrlResponse)
-            .collect(Collectors.toList());
-        stats.put("topUrls", topUrls);
-
-        List<UrlResponse> recentUrls = urlRepository.findTop10ByOrderByCreatedAtDesc()
-            .stream()
-            .map(this::toUrlResponse)
-            .collect(Collectors.toList());
-        stats.put("recentUrls", recentUrls);
+        for (Instant timestamp : history) {
+            LocalDateTime ldt = LocalDateTime.ofInstant(timestamp, ZoneId.systemDefault());
+            String hourKey = ldt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:00"));
+            stats.merge(hourKey, 1L, Long::sum);
+        }
 
         return stats;
-    }
-
-    /**
-     * Checks if a URL exists by short code.
-     */
-    public boolean urlExists(String shortCode) {
-        return urlRepository.findByShortCode(shortCode).isPresent();
     }
 
     private boolean isValidUrl(String url) {
@@ -237,36 +196,16 @@ public class UrlService {
         }
     }
 
-    private String extractBrowser(String userAgent) {
-        if (userAgent == null || userAgent.isEmpty()) {
-            return "Unknown";
-        }
-
-        if (userAgent.contains("Chrome")) {
-            return "Chrome";
-        } else if (userAgent.contains("Firefox")) {
-            return "Firefox";
-        } else if (userAgent.contains("Safari") && !userAgent.contains("Chrome")) {
-            return "Safari";
-        } else if (userAgent.contains("Edge")) {
-            return "Edge";
-        } else if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
-            return "Internet Explorer";
-        }
-
-        return "Other";
-    }
-
     private UrlResponse toUrlResponse(UrlDocument document) {
         String shortUrl;
         try {
             shortUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/")
+                .path("/r/")
                 .path(document.getShortCode())
                 .build()
                 .toUriString();
         } catch (Exception e) {
-            shortUrl = baseUrl + "/" + document.getShortCode();
+            shortUrl = baseUrl + "/r/" + document.getShortCode();
         }
 
         UrlResponse response = new UrlResponse(
@@ -274,13 +213,12 @@ public class UrlService {
             shortUrl,
             document.getOriginalUrl(),
             document.getCreatedAt(),
-            document.getClickCount()
+            document.getTotalClicks()
         );
         response.setExpiryDate(document.getExpiryDate());
         response.setLastAccessed(document.getLastAccessed());
-        response.setCreatedByIp(document.getCreatedByIp());
         response.setQrCode(document.getQrCode());
-        response.setClicks(document.getClicks());
+        response.setUserId(document.getUserId());
         return response;
     }
 }

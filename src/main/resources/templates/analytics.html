@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - TrimURL</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">&#128279;</span>
+            <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+        </div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/test">Test</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1>Link Analytics</h1>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">&#128200;</div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${url.clickCount}">0</span>
+                        <span class="stat-label">Total Clicks</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#128197;</div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${#temporals.format(url.createdAt, 'dd/MM/yyyy')}">-</span>
+                        <span class="stat-label">Created</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#128336;</div>
+                    <div class="stat-info">
+                        <span class="stat-value" th:text="${url.lastAccessed != null ? #temporals.format(url.lastAccessed, 'dd/MM/yyyy HH:mm') : 'Never'}">Never</span>
+                        <span class="stat-label">Last Accessed</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>URL Details</h2>
+                <div class="detail-card">
+                    <div class="detail-row">
+                        <label>Short URL:</label>
+                        <div class="copy-group">
+                            <input type="text" th:value="${url.shortUrl}" readonly>
+                            <button type="button" class="btn-copy" onclick="copyToClipboard()">Copy</button>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <label>Original URL:</label>
+                        <a th:href="${url.originalUrl}" th:text="${url.originalUrl}" target="_blank" class="original-url"></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Clicks Over Time (Worm Graph)</h2>
+                <div class="chart-container">
+                    <canvas id="clicksChart"></canvas>
+                </div>
+            </div>
+
+            <a href="/dashboard" class="btn-back">Back to Dashboard</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 TrimURL - URL Shortener Service</p>
+    </footer>
+
+    <script th:inline="javascript">
+        const stats = /*[[${stats}]]*/ {};
+        const labels = Object.keys(stats);
+        const data = Object.values(stats);
+
+        const ctx = document.getElementById('clicksChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Clicks',
+                    data: data,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        function copyToClipboard() {
+            const input = document.querySelector('.copy-group input');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert('Copied to clipboard!');
+        }
+    </script>
+</body>
+</html>

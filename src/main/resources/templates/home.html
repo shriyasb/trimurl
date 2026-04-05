@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrimURL - URL Shortener</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">&#128279;</span>
+            <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+        </div>
+        <nav>
+            <a href="/" class="active">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/test">Test</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="hero">
+                <h1>Shorten Your Links</h1>
+                <p>Create short, memorable URLs in seconds</p>
+            </div>
+
+            <div class="card">
+                <div th:if="${error}" class="alert error" th:text="${error}"></div>
+                <div th:if="${shortUrl}" class="alert success">
+                    <p>URL Shortened Successfully!</p>
+                    <div class="copy-group">
+                        <input type="text" th:value="${shortUrl}" readonly id="shortUrlInput">
+                        <button type="button" class="btn-copy" onclick="copyToClipboard()">Copy</button>
+                    </div>
+                </div>
+
+                <form th:action="@{/shorten}" method="post">
+                    <div class="form-group">
+                        <input type="url" name="url" placeholder="Enter your long URL here..." required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="customShortCode" placeholder="Custom short code (optional)">
+                    </div>
+                    <div class="form-group">
+                        <input type="datetime-local" name="expiryDate" placeholder="Expiry date (optional)">
+                    </div>
+                    <button type="submit" class="btn-primary">Shorten URL</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 TrimURL - URL Shortener Service</p>
+    </footer>
+
+    <script>
+        function copyToClipboard() {
+            const input = document.getElementById('shortUrlInput');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            alert('Copied to clipboard!');
+        }
+    </script>
+</body>
+</html>

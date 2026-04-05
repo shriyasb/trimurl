@@ -1,13 +1,13 @@
 package com.trimurl.controller;
 
-import com.trimurl.model.Click;
 import com.trimurl.model.UrlRequest;
 import com.trimurl.model.UrlResponse;
 import com.trimurl.service.UrlService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * REST controller for URL shortener operations.
- * Handles both API requests and web redirects.
+ * Controller for URL operations.
  */
 @Controller
 public class UrlController {
@@ -29,159 +28,92 @@ public class UrlController {
         this.urlService = urlService;
     }
 
-    /**
-     * API: Create a shortened URL
-     */
-    @PostMapping("/api/shorten")
-    @ResponseBody
-    public ResponseEntity<?> createShortUrl(@Valid @RequestBody UrlRequest request, HttpServletRequest httpRequest) {
+    @GetMapping("/")
+    public String home() {
+        return "home";
+    }
+
+    @PostMapping("/shorten")
+    public String shortenUrl(@Valid @ModelAttribute UrlRequest request,
+                             @AuthenticationPrincipal UserDetails user,
+                             Model model) {
+        String userId = user.getUsername();
         try {
-            String ipAddress = getClientIp(httpRequest);
-            UrlResponse response = urlService.createShortUrl(request, ipAddress);
-            return ResponseEntity.ok(response);
+            UrlResponse response = urlService.createShortUrl(request, userId);
+            model.addAttribute("shortUrl", response.getShortUrl());
+            model.addAttribute("originalUrl", request.getUrl());
         } catch (IllegalArgumentException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Internal server error");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            model.addAttribute("error", e.getMessage());
         }
+        return "home";
     }
 
-    /**
-     * API: Get all shortened URLs
-     */
-    @GetMapping("/api/urls")
-    @ResponseBody
-    public ResponseEntity<List<UrlResponse>> getAllUrls() {
-        return ResponseEntity.ok(urlService.getAllUrls());
-    }
-
-    /**
-     * API: Get analytics for a specific URL
-     */
-    @GetMapping("/api/analytics/{shortCode}")
-    @ResponseBody
-    public ResponseEntity<?> getAnalytics(@PathVariable String shortCode) {
-        UrlResponse analytics = urlService.getUrlAnalytics(shortCode);
-        if (analytics == null) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "URL not found");
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(analytics);
-    }
-
-    /**
-     * API: Get click history for a specific URL
-     */
-    @GetMapping("/api/clicks/{shortCode}")
-    @ResponseBody
-    public ResponseEntity<?> getClicks(@PathVariable String shortCode) {
-        List<Click> clicks = urlService.getClicks(shortCode);
-        if (clicks == null) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "URL not found");
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(clicks);
-    }
-
-    /**
-     * API: Get stats for a specific URL (simplified endpoint)
-     */
-    @GetMapping("/api/stats/{shortCode}")
-    @ResponseBody
-    public ResponseEntity<?> getStats(@PathVariable String shortCode) {
-        UrlResponse analytics = urlService.getUrlAnalytics(shortCode);
-        if (analytics == null) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "URL not found");
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(analytics);
-    }
-
-    /**
-     * API: Check if short code exists
-     */
-    @GetMapping("/api/exists/{shortCode}")
-    @ResponseBody
-    public ResponseEntity<Map<String, Boolean>> checkExists(@PathVariable String shortCode) {
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("exists", urlService.urlExists(shortCode));
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Web: Dashboard page with statistics
-     */
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-        Map<String, Object> stats = urlService.getDashboardStats();
-        model.addAttribute("totalUrls", stats.get("totalUrls"));
-        model.addAttribute("totalClicks", stats.get("totalClicks"));
-        model.addAttribute("topUrls", stats.get("topUrls"));
-        model.addAttribute("recentUrls", stats.get("recentUrls"));
+    public String dashboard(@AuthenticationPrincipal UserDetails user, Model model) {
+        String userId = user.getUsername();
+        model.addAttribute("urls", urlService.getUserUrls(userId));
+        model.addAttribute("totalUrls", urlService.getTotalUrls(userId));
+        model.addAttribute("totalClicks", urlService.getTotalClicks(userId));
+        model.addAttribute("topUrls", urlService.getTopUrls(userId));
         return "dashboard";
     }
 
-    /**
-     * Web: Stats page for specific URL
-     */
-    @GetMapping("/stats/{shortCode}")
-    public String stats(@PathVariable String shortCode, Model model) {
-        UrlResponse analytics = urlService.getUrlAnalytics(shortCode);
-        if (analytics == null) {
+    @GetMapping("/analytics/{shortCode}")
+    public String analytics(@PathVariable String shortCode,
+                            @AuthenticationPrincipal UserDetails user,
+                            Model model) {
+        String userId = user.getUsername();
+        UrlResponse url = urlService.getUrlAnalytics(shortCode, userId);
+        if (url == null) {
+            return "redirect:/dashboard";
+        }
+        Map<String, Long> stats = urlService.getClickStatsByHour(shortCode, userId);
+        model.addAttribute("url", url);
+        model.addAttribute("stats", stats);
+        return "analytics";
+    }
+
+    @GetMapping("/test")
+    public String test(@AuthenticationPrincipal UserDetails user, Model model) {
+        String userId = user.getUsername();
+        model.addAttribute("urls", urlService.getUserUrls(userId));
+        return "test";
+    }
+
+    @GetMapping("/r/{shortCode}")
+    public String redirect(@PathVariable String shortCode) {
+        String originalUrl = urlService.redirectToOriginal(shortCode);
+        if (originalUrl == null) {
             return "redirect:/error";
         }
-        model.addAttribute("url", analytics);
-        return "stats";
+        return "redirect:" + originalUrl;
     }
 
-    /**
-     * Web: Home page
-     */
-    @GetMapping("/")
-    public String index() {
-        return "index";
-    }
-
-    /**
-     * Web: Error page
-     */
     @GetMapping("/error")
     public String error() {
         return "error";
     }
 
-    /**
-     * Redirect: Handle short URL access (MUST be last)
-     */
-    @GetMapping("/{shortCode}")
-    public String redirect(@PathVariable String shortCode, HttpServletRequest request) {
-        String ipAddress = getClientIp(request);
-        String userAgent = request.getHeader("User-Agent");
-
-        String originalUrl = urlService.redirectToOriginal(shortCode, ipAddress, userAgent);
-
-        if (originalUrl == null) {
-            return "redirect:/error";
+    // API Endpoints
+    @PostMapping("/api/shorten")
+    @ResponseBody
+    public ResponseEntity<?> createShortUrl(@Valid @RequestBody UrlRequest request,
+                                            @AuthenticationPrincipal UserDetails user) {
+        try {
+            String userId = user.getUsername();
+            UrlResponse response = urlService.createShortUrl(request, userId);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
-
-        return "redirect:" + originalUrl;
     }
 
-    /**
-     * Extract client IP address from request
-     */
-    private String getClientIp(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+    @GetMapping("/api/urls")
+    @ResponseBody
+    public ResponseEntity<List<UrlResponse>> getUserUrls(@AuthenticationPrincipal UserDetails user) {
+        String userId = user.getUsername();
+        return ResponseEntity.ok(urlService.getUserUrls(userId));
     }
 }

@@ -50,7 +50,8 @@ header {
 
 nav {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
+    align-items: center;
 }
 
 nav a {
@@ -67,6 +68,22 @@ nav a:hover {
 }
 
 nav a.active {
+    background: #667eea;
+    color: white;
+}
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid #667eea;
+    color: #667eea;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
     background: #667eea;
     color: white;
 }
@@ -111,6 +128,23 @@ main {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
+.card.auth-card {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.card h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
 /* Form Styles */
 .form-group {
     margin-bottom: 1rem;
@@ -153,28 +187,29 @@ main {
     box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
 }
 
+/* Alert Messages */
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.alert.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.alert.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
 /* Result Section */
-.result {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e0e0e0;
-}
-
-.result.hidden,
-.error.hidden {
-    display: none;
-}
-
-.result-item label {
-    display: block;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 0.5rem;
-}
-
 .copy-group {
     display: flex;
     gap: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .copy-group input {
@@ -201,14 +236,21 @@ main {
     background: #45a049;
 }
 
-/* Error Message */
-.error {
-    margin-top: 1rem;
-    padding: 1rem;
-    background: #ffebee;
-    color: #c62828;
-    border-radius: 8px;
+/* Auth Switch */
+.auth-switch {
     text-align: center;
+    margin-top: 1.5rem;
+    color: #666;
+}
+
+.auth-switch a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
 }
 
 /* Error Page */
@@ -231,21 +273,6 @@ main {
     font-size: 1.1rem;
     opacity: 0.9;
     margin-bottom: 1.5rem;
-}
-
-.btn-back {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: white;
-    color: #667eea;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: transform 0.2s ease;
-}
-
-.btn-back:hover {
-    transform: translateY(-2px);
 }
 
 /* Footer */
