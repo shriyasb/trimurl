@@ -159,7 +159,8 @@ public class UrlService {
         }
         UrlDocument doc = optDocument.get();
         // Only allow owner to view analytics
-        if (!doc.getUserId().equals(userId)) {
+        String docUserId = doc.getUserId();
+        if (docUserId == null || !docUserId.equals(userId)) {
             return null;
         }
         return toUrlResponse(doc);
@@ -171,7 +172,8 @@ public class UrlService {
             return null;
         }
         UrlDocument doc = optDocument.get();
-        if (!doc.getUserId().equals(userId)) {
+        String docUserId = doc.getUserId();
+        if (docUserId == null || !docUserId.equals(userId)) {
             return null;
         }
 
