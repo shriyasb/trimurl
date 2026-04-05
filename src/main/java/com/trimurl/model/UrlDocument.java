@@ -22,6 +22,7 @@ public class UrlDocument {
     private List<Instant> clickHistory = new ArrayList<>();
     private Instant lastAccessed;
     private String userId;
+    private String qrCode;
 
     public UrlDocument() {
     }
@@ -39,7 +40,6 @@ public class UrlDocument {
         this.lastAccessed = Instant.now();
     }
 
-    // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -66,6 +66,9 @@ public class UrlDocument {
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+
+    public String getQrCode() { return qrCode; }
+    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
 
     public boolean isExpired() {
         return expiryDate != null && Instant.now().isAfter(expiryDate);
