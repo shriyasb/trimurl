@@ -15,9 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Controller for URL operations.
- */
 @Controller
 public class UrlController {
 
@@ -25,16 +22,6 @@ public class UrlController {
 
     public UrlController(UrlService urlService) {
         this.urlService = urlService;
-    }
-
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
-
-    @GetMapping("/register")
-    public String register() {
-        return "register";
     }
 
     @GetMapping("/home")
