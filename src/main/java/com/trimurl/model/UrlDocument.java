@@ -23,6 +23,7 @@ public class UrlDocument {
     private Instant lastAccessed;
     private String userId;
     private String qrCode;
+    private boolean disabled;
 
     public UrlDocument() {
     }
@@ -70,7 +71,13 @@ public class UrlDocument {
     public String getQrCode() { return qrCode; }
     public void setQrCode(String qrCode) { this.qrCode = qrCode; }
 
+    public boolean isDisabled() { return disabled; }
+    public void setDisabled(boolean disabled) { this.disabled = disabled; }
+
     public boolean isExpired() {
         return expiryDate != null && Instant.now().isAfter(expiryDate);
     }
+
+    public boolean isDisabled() { return disabled; }
+    public void setDisabled(boolean disabled) { this.disabled = disabled; }
 }

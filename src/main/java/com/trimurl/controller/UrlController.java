@@ -4,7 +4,6 @@ import com.trimurl.model.UrlRequest;
 import com.trimurl.model.UrlResponse;
 import com.trimurl.service.UrlService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +27,17 @@ public class UrlController {
         this.urlService = urlService;
     }
 
-    @GetMapping("/")
+    @GetMapping("/login")
+    public String login() {
+        return "login";
+    }
+
+    @GetMapping("/register")
+    public String register() {
+        return "register";
+    }
+
+    @GetMapping("/home")
     public String home() {
         return "home";
     }
@@ -56,6 +65,22 @@ public class UrlController {
         model.addAttribute("totalClicks", urlService.getTotalClicks(userId));
         model.addAttribute("topUrls", urlService.getTopUrls(userId));
         return "dashboard";
+    }
+
+    @PostMapping("/delete/{shortCode}")
+    public String deleteUrl(@PathVariable String shortCode,
+                           @AuthenticationPrincipal UserDetails user) {
+        String userId = user.getUsername();
+        urlService.deleteUrl(shortCode, userId);
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/toggle/{shortCode}")
+    public String toggleUrl(@PathVariable String shortCode,
+                           @AuthenticationPrincipal UserDetails user) {
+        String userId = user.getUsername();
+        urlService.toggleUrl(shortCode, userId);
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/analytics/{shortCode}")
