@@ -6,9 +6,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * URL Document entity for MongoDB.
- */
 @Document(collection = "urls")
 public class UrlDocument {
 
@@ -77,7 +74,4 @@ public class UrlDocument {
     public boolean isExpired() {
         return expiryDate != null && Instant.now().isAfter(expiryDate);
     }
-
-    public boolean isDisabled() { return disabled; }
-    public void setDisabled(boolean disabled) { this.disabled = disabled; }
 }

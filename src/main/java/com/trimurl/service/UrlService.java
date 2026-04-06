@@ -118,7 +118,7 @@ public class UrlService {
 
         UrlDocument document = optDocument.get();
 
-        if (document.isExpired()) {
+        if (document.isDisabled() || document.isExpired()) {
             return null;
         }
 
@@ -187,6 +187,27 @@ public class UrlService {
         }
 
         return stats;
+    }
+
+    public void deleteUrl(String shortCode, String userId) {
+        Optional<UrlDocument> optDocument = urlRepository.findByShortCode(shortCode);
+        if (optDocument.isPresent()) {
+            UrlDocument doc = optDocument.get();
+            if (doc.getUserId() != null && doc.getUserId().equals(userId)) {
+                urlRepository.delete(doc);
+            }
+        }
+    }
+
+    public void toggleUrl(String shortCode, String userId) {
+        Optional<UrlDocument> optDocument = urlRepository.findByShortCode(shortCode);
+        if (optDocument.isPresent()) {
+            UrlDocument doc = optDocument.get();
+            if (doc.getUserId() != null && doc.getUserId().equals(userId)) {
+                doc.setDisabled(!doc.isDisabled());
+                urlRepository.save(doc);
+            }
+        }
     }
 
     private boolean isValidUrl(String url) {
