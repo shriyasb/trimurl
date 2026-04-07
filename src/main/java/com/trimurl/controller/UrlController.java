@@ -67,7 +67,7 @@ public class UrlController {
                            @AuthenticationPrincipal UserDetails user) {
         String userId = user.getUsername();
         urlService.toggleUrl(shortCode, userId);
-        return "redirect:/dashboard";
+        return "redirect:/dashboard?disabled=true";
     }
 
     @GetMapping("/analytics/{shortCode}")

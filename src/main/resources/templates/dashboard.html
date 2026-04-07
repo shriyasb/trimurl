@@ -63,14 +63,14 @@
                                 <td th:text="${url.clickCount}">0</td>
                                 <td>
                                     <span th:if="${url.clickCount > 0}" class="status-badge active">Active</span>
-                                    <span th:unless="${url.clickCount > 0}" class="status-badge">New</span>
+                                    <span th:unless="${url.clickCount > 0}" class="status-badge new">New</span>
                                 </td>
                                 <td class="actions-cell">
                                     <a th:href="@{'/analytics/' + ${url.shortCode}}" class="btn-small">Analytics</a>
                                     <form th:action="@{'/toggle/' + ${url.shortCode}}" method="post" style="display:inline;">
-                                        <button type="submit" class="btn-small btn-toggle">Disable</button>
+                                        <button type="submit" class="btn-small btn-toggle" onclick="return confirm('Disable this link?')">Disable</button>
                                     </form>
-                                    <form th:action="@{'/delete/' + ${url.shortCode}}" method="post" style="display:inline;" onsubmit="return confirm('Delete this link?')">
+                                    <form th:action="@{'/delete/' + ${url.shortCode}}" method="post" style="display:inline;" onsubmit="return confirm('Delete this link permanently?')">
                                         <button type="submit" class="btn-small btn-delete">Delete</button>
                                     </form>
                                 </td>
@@ -88,5 +88,9 @@
     <footer>
         <p>&copy; 2026 TrimURL - URL Shortener Service</p>
     </footer>
+
+    <script th:if="${param.disabled}">
+        alert('Link has been disabled');
+    </script>
 </body>
 </html>
