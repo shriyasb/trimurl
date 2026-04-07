@@ -56,14 +56,14 @@
                 <div class="detail-card">
                     <div class="detail-row">
                         <label>Short URL:</label>
-                        <div class="copy-group">
-                            <input type="text" th:value="${url.shortUrl}" readonly>
+                        <div class="copy-group" style="flex-wrap: wrap;">
+                            <input type="text" th:value="${url.shortUrl}" readonly style="min-width: 200px; flex: 1;">
                             <button type="button" class="btn-copy" onclick="copyToClipboard()">Copy</button>
                         </div>
                     </div>
                     <div class="detail-row">
                         <label>Original URL:</label>
-                        <a th:href="${url.originalUrl}" th:text="${url.originalUrl}" target="_blank" class="original-url"></a>
+                        <a th:href="${url.originalUrl}" th:text="${url.originalUrl}" target="_blank" class="original-url" style="word-break: break-all; display: block; max-width: 100%;"></a>
                     </div>
                 </div>
             </div>
