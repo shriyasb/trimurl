@@ -39,11 +39,6 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
-            )
-            .exceptionHandling(ex -> ex
-                .defaultAuthenticationEntryPoint((request, response, authException) -> {
-                    response.sendRedirect("/login");
-                })
             );
 
         return http.build();
