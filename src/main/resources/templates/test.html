@@ -5,6 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Links - TrimURL</title>
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        .test-subtitle {
+            color: white !important;
+            font-size: 1.2rem !important;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .test-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 0.75rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .test-link-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        .short-link {
+            font-weight: 700;
+            color: #2563eb;
+            font-size: 1rem;
+        }
+        .original-link {
+            font-size: 0.8rem;
+            color: #64748b;
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -13,7 +56,7 @@
             <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
         </div>
         <nav>
-            <a href="/">Home</a>
+            <a href="/home">Home</a>
             <a href="/dashboard">Dashboard</a>
             <a href="/test" class="active">Test</a>
             <form th:action="@{/logout}" method="post" style="display:inline;">
@@ -25,7 +68,7 @@
     <main>
         <div class="container">
             <h1>Test Your Links</h1>
-            <p class="subtitle">Click your short links below to simulate traffic and track analytics.</p>
+            <p class="test-subtitle">Click your short links below to simulate traffic and track analytics.</p>
 
             <div class="section">
                 <h2>Your Short Links</h2>
@@ -47,9 +90,9 @@
 
             <div class="section">
                 <h2>Manual Test</h2>
-                <p>Enter short code or full short URL:</p>
+                <p style="color: #64748b; margin-bottom: 1rem;">Enter short code to test:</p>
                 <form id="manualTestForm" class="test-form">
-                    <input type="text" id="shortCodeInput" placeholder="e.g., abc123 or https://trimurl.onrender.com/r/abc123" required>
+                    <input type="text" id="shortCodeInput" placeholder="Enter short code (e.g., abc12345)" required>
                     <button type="submit" class="btn-primary">Test</button>
                 </form>
             </div>
@@ -63,17 +106,10 @@
     <script>
         document.getElementById('manualTestForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            var input = document.getElementById('shortCodeInput').value.trim();
-
-            // Extract short code from full URL if user pasted full URL
-            var shortCode = input;
-            if (input.includes('/r/')) {
-                shortCode = input.split('/r/')[1];
-            } else if (input.includes(' trimurl.onrender.com/')) {
-                shortCode = input.split(' trimurl.onrender.com/')[1];
+            var code = document.getElementById('shortCodeInput').value.trim();
+            if (code) {
+                window.location.href = '/r/' + code;
             }
-
-            window.location.href = '/r/' + shortCode;
         });
     </script>
 </body>
