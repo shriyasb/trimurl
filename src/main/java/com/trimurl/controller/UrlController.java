@@ -20,27 +20,22 @@ public class UrlController {
 
     private final UrlService urlService;
 
-    public UrlController(UrlService urlService) {
-        this.urlService = urlService;
-    }
+    public UrlController(UrlService urlService) { this.urlService = urlService; }
 
     @GetMapping("/")
-    public String root() {
-        return "redirect:/login";
-    }
+    public String root() { return "redirect:/login"; }
 
     @GetMapping("/home")
-    public String home() {
-        return "home";
+    public String home(@AuthenticationPrincipal UserDetails user) {
+        boolean isAdmin = user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return isAdmin ? "redirect:/admin" : "home";
     }
 
     @PostMapping("/shorten")
     public String shortenUrl(@Valid @ModelAttribute UrlRequest request,
-                             @AuthenticationPrincipal UserDetails user,
-                             Model model) {
-        String userId = user.getUsername();
+                             @AuthenticationPrincipal UserDetails user, Model model) {
         try {
-            UrlResponse response = urlService.createShortUrl(request, userId);
+            UrlResponse response = urlService.createShortUrl(request, user.getUsername());
             model.addAttribute("shortUrl", response.getShortUrl());
             model.addAttribute("originalUrl", request.getUrl());
         } catch (IllegalArgumentException e) {
@@ -60,77 +55,77 @@ public class UrlController {
     }
 
     @PostMapping("/delete/{shortCode}")
-    public String deleteUrl(@PathVariable String shortCode,
-                           @AuthenticationPrincipal UserDetails user) {
-        String userId = user.getUsername();
-        urlService.deleteUrl(shortCode, userId);
+    public String deleteUrl(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
+        urlService.deleteUrl(shortCode, user.getUsername());
         return "redirect:/dashboard";
     }
 
+    @PostMapping("/schedule-disable/{shortCode}")
+    public String scheduleDisable(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
+        urlService.scheduleDisable(shortCode, user.getUsername());
+        return "redirect:/dashboard?pendingDisable=true";
+    }
+
+    @PostMapping("/enable/{shortCode}")
+    public String enableUrl(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
+        urlService.enableUrl(shortCode, user.getUsername());
+        return "redirect:/dashboard?enabled=true";
+    }
+
     @PostMapping("/toggle/{shortCode}")
-    public String toggleUrl(@PathVariable String shortCode,
-                           @AuthenticationPrincipal UserDetails user) {
-        String userId = user.getUsername();
-        urlService.toggleUrl(shortCode, userId);
-        return "redirect:/dashboard?disabled=true";
+    public String toggleUrl(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
+        urlService.scheduleDisable(shortCode, user.getUsername());
+        return "redirect:/dashboard?pendingDisable=true";
     }
 
     @GetMapping("/analytics/{shortCode}")
     public String analytics(@PathVariable String shortCode,
-                            @AuthenticationPrincipal UserDetails user,
-                            Model model) {
+                            @AuthenticationPrincipal UserDetails user, Model model) {
         String userId = user.getUsername();
         UrlResponse url = urlService.getUrlAnalytics(shortCode, userId);
-        if (url == null) {
-            return "redirect:/dashboard";
-        }
-        Map<String, Long> stats = urlService.getClickStatsByHour(shortCode, userId);
+        if (url == null) return "redirect:/dashboard";
         model.addAttribute("url", url);
-        model.addAttribute("stats", stats);
+        model.addAttribute("stats", urlService.getClickStatsByHour(shortCode, userId));
         return "analytics";
     }
 
     @GetMapping("/test")
     public String test(@AuthenticationPrincipal UserDetails user, Model model) {
-        String userId = user.getUsername();
-        model.addAttribute("urls", urlService.getUserUrls(userId));
+        model.addAttribute("urls", urlService.getUserUrls(user.getUsername()));
         return "test";
     }
 
     @GetMapping("/r/{shortCode}")
     public String redirect(@PathVariable String shortCode) {
-        String originalUrl = urlService.redirectToOriginal(shortCode);
-        if (originalUrl == null) {
-            return "redirect:/error";
-        }
-        return "redirect:" + originalUrl;
+        String url = urlService.redirectToOriginal(shortCode);
+        return url != null ? "redirect:" + url : "redirect:/error";
     }
 
     @GetMapping("/error")
-    public String error() {
-        return "error";
-    }
+    public String error() { return "error"; }
 
-    // API Endpoints
     @PostMapping("/api/shorten")
     @ResponseBody
     public ResponseEntity<?> createShortUrl(@Valid @RequestBody UrlRequest request,
                                             @AuthenticationPrincipal UserDetails user) {
         try {
-            String userId = user.getUsername();
-            UrlResponse response = urlService.createShortUrl(request, userId);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(urlService.createShortUrl(request, user.getUsername()));
         } catch (IllegalArgumentException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
     @GetMapping("/api/urls")
     @ResponseBody
     public ResponseEntity<List<UrlResponse>> getUserUrls(@AuthenticationPrincipal UserDetails user) {
-        String userId = user.getUsername();
-        return ResponseEntity.ok(urlService.getUserUrls(userId));
+        return ResponseEntity.ok(urlService.getUserUrls(user.getUsername()));
+    }
+
+    @PostMapping("/api/check-url")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> checkUrl(@RequestBody Map<String, String> body) {
+        String url = body.get("url");
+        if (url == null || url.isBlank()) return ResponseEntity.badRequest().body(Map.of("secure", false, "message", "No URL provided"));
+        return ResponseEntity.ok(urlService.checkUrlSecurity(url));
     }
 }

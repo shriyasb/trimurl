@@ -1,8 +1,0 @@
-com\trimurl\model\UrlResponse.class
-com\trimurl\repository\UrlRepository.class
-com\trimurl\service\UrlService.class
-com\trimurl\TrimUrlApplication.class
-com\trimurl\controller\UrlController.class
-com\trimurl\model\Click.class
-com\trimurl\model\UrlDocument.class
-com\trimurl\model\UrlRequest.class

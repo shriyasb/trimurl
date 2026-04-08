@@ -1,52 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - TrimURL</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Sign In – TrimURL</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <span class="logo-icon">&#128279;</span>
-            <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+<div id="toast-container"></div>
+<header>
+  <div class="logo"><span class="logo-icon">🔗</span>
+    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span></div>
+</header>
+<main>
+  <div class="container">
+    <div class="hero"><h1>Welcome Back</h1><p>Sign in to manage your short links</p></div>
+    <div class="card">
+      <div th:if="${param.registered}" class="alert success">🎉 Account created! You can now sign in.</div>
+      <div th:if="${param.logout}"     class="alert success">👋 You've been signed out successfully.</div>
+      <div th:if="${error}"            class="alert error"   th:text="${error}"></div>
+      <form th:action="@{/login}" method="post">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" name="username" placeholder="you@example.com" required autofocus>
         </div>
-    </header>
-
-    <main>
-        <div class="container">
-            <div class="card auth-card">
-                <h1>Welcome Back</h1>
-                <p class="subtitle">Sign in to your account</p>
-
-                <div th:if="${param.registered}" class="alert success">
-                    Registration successful! Please login.
-                </div>
-                <div th:if="${param.logout}" class="alert success">
-                    You have been logged out.
-                </div>
-                <div th:if="${error}" class="alert error" th:text="${error}"></div>
-
-                <form th:action="@{/login}" method="post">
-                    <div class="form-group">
-                        <input type="email" name="username" placeholder="Email address" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" name="password" placeholder="Password" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Sign In</button>
-                </form>
-
-                <p class="auth-switch">
-                    Don't have an account? <a th:href="@{/register}">Register</a>
-                </p>
-            </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" placeholder="••••••••" required>
         </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2026 TrimURL - URL Shortener Service</p>
-    </footer>
+        <button type="submit" class="btn-primary" style="margin-top:0.4rem;">Sign In →</button>
+      </form>
+      <div class="role-note">🔐 Your dashboard is determined by your account role</div>
+      <p class="auth-switch">No account? <a th:href="@{/register}">Create one free</a></p>
+    </div>
+  </div>
+</main>
+<footer><p>© 2026 TrimURL — Shorten smarter.</p></footer>
+<script>
+function showToast(msg,type='info'){const c=document.getElementById('toast-container');const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>{t.style.animation='toastOut 0.3s ease forwards';setTimeout(()=>t.remove(),300)},3800);}
+const p=new URLSearchParams(location.search);
+if(p.get('registered'))showToast('🎉 Account created — sign in now!','success');
+if(p.get('logout'))showToast('👋 Signed out successfully.','info');
+</script>
 </body>
 </html>

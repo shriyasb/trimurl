@@ -5,9 +5,6 @@ import com.trimurl.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/**
- * Service for user authentication.
- */
 @Service
 public class AuthService {
 
@@ -19,13 +16,17 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User register(String email, String name, String password) {
+    public User register(String email, String name, String password, String role) {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already registered");
         }
-
-        User user = new User(email, name, passwordEncoder.encode(password));
+        String safeRole = ("ADMIN".equalsIgnoreCase(role)) ? "ADMIN" : "USER";
+        User user = new User(email, name, passwordEncoder.encode(password), safeRole);
         return userRepository.save(user);
+    }
+
+    public User register(String email, String name, String password) {
+        return register(email, name, password, "USER");
     }
 
     public User getUserByEmail(String email) {

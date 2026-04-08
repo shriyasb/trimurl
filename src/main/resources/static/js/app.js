@@ -1,90 +1,16 @@
-// TrimURL - Main Application JavaScript
-
+// TrimURL shared utilities
+function showToast(msg, type = 'info') {
+  let c = document.getElementById('toast-container');
+  if (!c) { c = document.createElement('div'); c.id = 'toast-container'; document.body.appendChild(c); }
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg; c.appendChild(t);
+  setTimeout(() => { t.style.animation = 'toastOut 0.3s ease forwards'; setTimeout(() => t.remove(), 300); }, 4200);
+}
 document.addEventListener('DOMContentLoaded', () => {
-    const urlInput = document.getElementById('urlInput');
-    const shortenBtn = document.getElementById('shortenBtn');
-    const resultDiv = document.getElementById('result');
-    const shortUrlInput = document.getElementById('shortUrl');
-    const copyBtn = document.getElementById('copyBtn');
-    const errorDiv = document.getElementById('error');
-
-    // Shorten URL on button click
-    shortenBtn.addEventListener('click', shortenUrl);
-
-    // Shorten URL on Enter key
-    urlInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            shortenUrl();
-        }
+  document.querySelectorAll('.created-time, .last-access').forEach(el => {
+    const ts = el.dataset.ts; if (!ts) return;
+    el.textContent = new Date(ts).toLocaleString(undefined, {
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
     });
-
-    // Copy to clipboard
-    copyBtn.addEventListener('click', copyToClipboard);
-
-    async function shortenUrl() {
-        const url = urlInput.value.trim();
-
-        if (!url) {
-            showError('Please enter a URL');
-            return;
-        }
-
-        // Validate URL format
-        try {
-            new URL(url);
-        } catch {
-            showError('Please enter a valid URL');
-            return;
-        }
-
-        // Clear previous states
-        hideError();
-        resultDiv.classList.add('hidden');
-
-        try {
-            const response = await fetch('/api/shorten', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ url: url })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                shortUrlInput.value = data.shortUrl;
-                resultDiv.classList.remove('hidden');
-            } else {
-                showError(data.error || 'Failed to shorten URL');
-            }
-        } catch (error) {
-            showError('Network error. Please try again.');
-        }
-    }
-
-    function copyToClipboard() {
-        shortUrlInput.select();
-        shortUrlInput.setSelectionRange(0, 99999);
-
-        navigator.clipboard.writeText(shortUrlInput.value).then(() => {
-            const originalText = copyBtn.textContent;
-            copyBtn.textContent = 'Copied!';
-            copyBtn.style.backgroundColor = '#10b981';
-
-            setTimeout(() => {
-                copyBtn.textContent = originalText;
-                copyBtn.style.backgroundColor = '';
-            }, 2000);
-        });
-    }
-
-    function showError(message) {
-        errorDiv.textContent = message;
-        errorDiv.classList.remove('hidden');
-    }
-
-    function hideError() {
-        errorDiv.classList.add('hidden');
-    }
+  });
 });

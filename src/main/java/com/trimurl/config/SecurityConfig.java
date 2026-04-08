@@ -25,9 +25,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**").permitAll()
                 .requestMatchers("/r/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -40,18 +40,23 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
             );
-
         return http.build();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
         return email -> userRepository.findByEmail(email)
-            .map(user -> org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .roles("USER")
-                .build())
+            .map(user -> {
+                if (user.isAccountDisabled()) {
+                    throw new UsernameNotFoundException("Account has been disabled by an administrator.");
+                }
+                String role = (user.getRole() != null) ? user.getRole() : "USER";
+                return org.springframework.security.core.userdetails.User.builder()
+                    .username(user.getEmail())
+                    .password(user.getPassword())
+                    .roles(role)
+                    .build();
+            })
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
