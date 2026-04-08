@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +59,14 @@ public class UrlController {
         return "redirect:/dashboard";
     }
 
+    // FIX 3: Immediately disable with redirect flag for instant toast notification
+    @PostMapping("/disable/{shortCode}")
+    public String disableUrl(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
+        urlService.disableNow(shortCode, user.getUsername());
+        return "redirect:/dashboard?disabled=true";
+    }
+
+    // Schedule disable in 1 hour (kept for backward compat / expiry warning system)
     @PostMapping("/schedule-disable/{shortCode}")
     public String scheduleDisable(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
         urlService.scheduleDisable(shortCode, user.getUsername());
@@ -72,10 +79,11 @@ public class UrlController {
         return "redirect:/dashboard?enabled=true";
     }
 
+    // Legacy toggle now routes to immediate disable
     @PostMapping("/toggle/{shortCode}")
     public String toggleUrl(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
-        urlService.scheduleDisable(shortCode, user.getUsername());
-        return "redirect:/dashboard?pendingDisable=true";
+        urlService.disableNow(shortCode, user.getUsername());
+        return "redirect:/dashboard?disabled=true";
     }
 
     @GetMapping("/analytics/{shortCode}")

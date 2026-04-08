@@ -14,6 +14,7 @@ public class UrlResponse {
     private String userId;
     private boolean disabled;
     private Instant scheduledDisableAt;
+    private boolean nearingExpiry;
 
     public UrlResponse() {}
 
@@ -44,4 +45,6 @@ public class UrlResponse {
     public void setDisabled(boolean disabled) { this.disabled = disabled; }
     public Instant getScheduledDisableAt() { return scheduledDisableAt; }
     public void setScheduledDisableAt(Instant scheduledDisableAt) { this.scheduledDisableAt = scheduledDisableAt; }
+    public boolean isNearingExpiry() { return nearingExpiry; }
+    public void setNearingExpiry(boolean nearingExpiry) { this.nearingExpiry = nearingExpiry; }
 }

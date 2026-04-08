@@ -9,8 +9,7 @@ import java.util.List;
 @Document(collection = "urls")
 public class UrlDocument {
 
-    @Id
-    private String id;
+    @Id private String id;
     private String shortCode;
     private String originalUrl;
     private Instant createdAt;
@@ -22,25 +21,21 @@ public class UrlDocument {
     private String qrCode;
     private boolean disabled;
     private Instant scheduledDisableAt;
+    // FIX 4: set to true when expiry is within 1 hour
+    private boolean nearingExpiry = false;
 
     public UrlDocument() {}
 
     public UrlDocument(String shortCode, String originalUrl, Instant createdAt) {
-        this.shortCode = shortCode;
-        this.originalUrl = originalUrl;
-        this.createdAt = createdAt;
-        this.totalClicks = 0;
+        this.shortCode = shortCode; this.originalUrl = originalUrl;
+        this.createdAt = createdAt; this.totalClicks = 0;
     }
 
     public void addClick(Instant timestamp) {
-        this.clickHistory.add(timestamp);
-        this.totalClicks++;
-        this.lastAccessed = Instant.now();
+        this.clickHistory.add(timestamp); this.totalClicks++; this.lastAccessed = Instant.now();
     }
 
-    public boolean isExpired() {
-        return expiryDate != null && Instant.now().isAfter(expiryDate);
-    }
+    public boolean isExpired() { return expiryDate != null && Instant.now().isAfter(expiryDate); }
 
     public boolean shouldBeDisabledNow() {
         return scheduledDisableAt != null && Instant.now().isAfter(scheduledDisableAt) && !disabled;
@@ -70,4 +65,6 @@ public class UrlDocument {
     public void setDisabled(boolean disabled) { this.disabled = disabled; }
     public Instant getScheduledDisableAt() { return scheduledDisableAt; }
     public void setScheduledDisableAt(Instant scheduledDisableAt) { this.scheduledDisableAt = scheduledDisableAt; }
+    public boolean isNearingExpiry() { return nearingExpiry; }
+    public void setNearingExpiry(boolean nearingExpiry) { this.nearingExpiry = nearingExpiry; }
 }

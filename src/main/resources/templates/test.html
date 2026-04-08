@@ -2,13 +2,221 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Test – TrimURL</title>
+  <title>Test Links – TrimURL</title>
   <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+  <style>
+    /* ── Page Layout ── */
+    .test-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media(max-width:860px){ .test-grid{grid-template-columns:1fr;} }
+
+    /* ── Link Tester Panel ── */
+    .tester-panel { display: flex; flex-direction: column; gap: 1rem; }
+    .tester-input-wrap {
+      display: flex; gap: 0.5rem;
+    }
+    .tester-input-wrap input {
+      flex: 1; padding: 0.82rem 1rem;
+      background: var(--bg-input); border: 1px solid var(--border-md);
+      border-radius: var(--r); color: var(--t1);
+      font-size: 0.92rem; font-family: 'Nunito', sans-serif; font-weight: 600;
+      outline: none; transition: all 0.2s;
+    }
+    .tester-input-wrap input:focus {
+      border-color: var(--p6); box-shadow: 0 0 0 3px rgba(124,58,237,0.18);
+    }
+    .tester-input-wrap input::placeholder { color: var(--t3); }
+    .btn-test {
+      padding: 0.82rem 1.2rem; background: linear-gradient(135deg,var(--p7),var(--p6));
+      color: #fff; border: none; border-radius: var(--r);
+      cursor: pointer; font-weight: 700; font-size: 0.88rem;
+      font-family: 'Nunito', sans-serif; transition: all 0.2s; white-space: nowrap;
+      box-shadow: 0 4px 16px var(--p-glow);
+    }
+    .btn-test:hover { transform: translateY(-1px); box-shadow: 0 6px 24px var(--p-glow); }
+
+    .test-result {
+      padding: 0.85rem 1rem; border-radius: var(--r);
+      font-weight: 600; font-size: 0.88rem; display: none;
+    }
+    .test-result.show { display: block; }
+    .test-result.valid   { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: #6ee7b7; }
+    .test-result.invalid { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; }
+    .test-result.checking { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
+
+    /* ── Your Links List ── */
+    .link-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.7rem 0; border-bottom: 1px solid var(--border); gap: 0.5rem;
+    }
+    .link-item:last-child { border-bottom: none; }
+    .link-short { color: var(--p4); font-weight: 700; font-size: 0.85rem; text-decoration: none; }
+    .link-short:hover { text-decoration: underline; }
+    .link-orig { color: var(--t3); font-size: 0.77rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+    .btn-use {
+      flex-shrink: 0; padding: 0.28rem 0.65rem; border-radius: 8px;
+      background: var(--p-tint); border: 1px solid rgba(124,58,237,0.3);
+      color: var(--p4); font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; font-family: 'Nunito', sans-serif;
+    }
+    .btn-use:hover { background: rgba(124,58,237,0.2); }
+
+    /* ── Instagram Mock Phone ── */
+    .phone-wrap {
+      display: flex; justify-content: center;
+    }
+    .phone {
+      width: 300px;
+      background: #000;
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow:
+        0 0 0 2px #333,
+        0 0 0 4px #1a1a2e,
+        0 32px 80px rgba(0,0,0,0.7),
+        0 0 60px rgba(109,40,217,0.15);
+      position: relative;
+    }
+    /* Notch */
+    .phone::before {
+      content: '';
+      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+      width: 80px; height: 24px;
+      background: #000; border-radius: 0 0 16px 16px;
+      z-index: 10;
+    }
+    .phone-screen {
+      background: #fafafa;
+      border-radius: 30px;
+      overflow: hidden;
+      min-height: 580px;
+      position: relative;
+    }
+
+    /* Instagram UI */
+    .ig-header {
+      background: #fff;
+      padding: 14px 16px 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #dbdbdb;
+      position: sticky; top: 0; z-index: 5;
+    }
+    .ig-wordmark {
+      font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800;
+      background: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; letter-spacing: -0.5px;
+    }
+    .ig-header-icons { display: flex; gap: 14px; align-items: center; }
+    .ig-icon { width: 22px; height: 22px; stroke: #262626; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+    /* Stories */
+    .ig-stories {
+      background: #fff;
+      padding: 10px 0;
+      display: flex; gap: 0; overflow-x: auto;
+      border-bottom: 1px solid #dbdbdb;
+      scrollbar-width: none;
+    }
+    .ig-stories::-webkit-scrollbar { display: none; }
+    .story-item { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 8px; cursor: pointer; }
+    .story-ring {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+      padding: 2px; display: flex; align-items: center; justify-content: center;
+    }
+    .story-ring.seen { background: #dbdbdb; }
+    .story-avatar {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: #ddd; border: 2px solid #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: #888; overflow: hidden;
+    }
+    .story-label { font-size: 0.6rem; color: #262626; font-weight: 400; text-align: center; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Post */
+    .ig-post { background: #fff; border-bottom: 8px solid #fafafa; }
+    .ig-post-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+    .post-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(45deg, var(--p7), var(--b5));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .post-user { flex: 1; }
+    .post-username { font-size: 0.78rem; font-weight: 700; color: #262626; }
+    .post-location { font-size: 0.65rem; color: #8e8e8e; }
+    .post-dots { color: #262626; font-size: 1rem; cursor: pointer; }
+
+    .ig-post-image {
+      width: 100%; aspect-ratio: 1;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .ig-post-image::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(124,58,237,0.2), transparent);
+    }
+    .post-link-display {
+      position: relative; z-index: 1; text-align: center; padding: 1rem;
+    }
+    .post-link-label {
+      font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 600;
+      color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;
+    }
+    .post-link-url {
+      font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 800;
+      color: #fff; word-break: break-all; line-height: 1.3;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .post-link-cta {
+      margin-top: 0.8rem; padding: 0.45rem 1.2rem;
+      background: linear-gradient(135deg, #833ab4, #fd1d1d);
+      border-radius: 20px; color: #fff; font-size: 0.72rem; font-weight: 700;
+      display: inline-block;
+    }
+    .post-link-icon { font-size: 2.5rem; margin-bottom: 0.5rem; display: block; }
+
+    .ig-post-actions { display: flex; align-items: center; gap: 12px; padding: 10px 12px 6px; }
+    .ig-action { background: none; border: none; cursor: pointer; display: flex; align-items: center; }
+    .ig-action svg { width: 22px; height: 22px; stroke: #262626; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .ig-action.liked svg { stroke: #ff3040; fill: #ff3040; }
+    .ig-action-save { margin-left: auto; }
+    .ig-action-save svg { width: 22px; height: 22px; stroke: #262626; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .ig-post-likes { padding: 0 12px; font-size: 0.75rem; font-weight: 700; color: #262626; }
+    .ig-post-caption { padding: 4px 12px 10px; font-size: 0.75rem; color: #262626; line-height: 1.4; }
+    .ig-post-caption span { font-weight: 700; }
+    .ig-post-caption .ig-link-text { color: #00376b; font-weight: 600; }
+
+    .ig-post-time { padding: 0 12px 10px; font-size: 0.65rem; color: #8e8e8e; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    /* IG Bottom Nav */
+    .ig-nav {
+      background: #fff; border-top: 1px solid #dbdbdb;
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 10px 0 14px;
+      position: sticky; bottom: 0;
+    }
+    .ig-nav-btn { background: none; border: none; cursor: pointer; padding: 4px; }
+    .ig-nav-btn svg { width: 24px; height: 24px; stroke: #262626; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .ig-nav-btn.active svg { stroke: #000; fill: #000; }
+    .ig-nav-profile { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(45deg,var(--p7),var(--b5)); border: 2px solid #262626; }
+  </style>
 </head>
 <body>
+<div id="toast-container"></div>
 <header>
-  <div class="logo"><span class="logo-icon">🔗</span>
-    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span></div>
+  <div class="logo">
+    <span class="logo-icon">🔗</span>
+    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+  </div>
   <nav>
     <a href="/home">Home</a>
     <a href="/dashboard">Dashboard</a>
@@ -18,21 +226,264 @@
     </form>
   </nav>
 </header>
-<main>
-  <div class="container">
-    <div class="page-title">Test Page</div>
-    <div class="section">
-      <h2>Your URLs</h2>
-      <div id="urlList">
-        <div th:each="url : ${urls}" style="padding:0.8rem 0;border-bottom:1px solid var(--border);">
-          <span style="color:var(--orange);font-weight:700;" th:text="${url.shortCode}">code</span>
-          <span style="color:var(--text-2);margin-left:1rem;font-size:0.85rem;" th:text="${url.originalUrl}">url</span>
+<main style="align-items:flex-start;padding-top:2.5rem;">
+  <div class="container" style="max-width:900px;">
+    <div class="page-title">Test Your <span>Links</span></div>
+
+    <div class="test-grid">
+
+      <!-- LEFT: Tester + links list -->
+      <div class="tester-panel">
+
+        <!-- Link tester input -->
+        <div class="section" style="padding:1.4rem 1.5rem;">
+          <h2>Test a Short Link</h2>
+          <p style="color:var(--t2);font-size:0.88rem;margin-bottom:1rem;">Paste any TrimURL short link to verify it works correctly.</p>
+          <div class="tester-input-wrap">
+            <input type="url" id="testInput" placeholder="https://your-domain.com/r/abc123">
+            <button class="btn-test" onclick="testLink()">▶ Test</button>
+          </div>
+          <div id="testResult" class="test-result"></div>
         </div>
-        <p th:if="${#lists.isEmpty(urls)}" style="color:var(--text-3);text-align:center;padding:2rem;">No URLs yet.</p>
+
+        <!-- Your saved links -->
+        <div class="section" style="padding:1.4rem 1.5rem;">
+          <h2>Your Short Links</h2>
+          <p style="color:var(--t2);font-size:0.85rem;margin-bottom:0.8rem;">Click "Use" to load a link into the tester or preview it in the Instagram mockup.</p>
+
+          <div th:if="${!#lists.isEmpty(urls)}">
+            <div th:each="url : ${urls}" class="link-item">
+              <div style="min-width:0;flex:1;">
+                <div><a class="link-short" th:href="${url.shortUrl}" target="_blank" th:text="${url.shortUrl}">link</a></div>
+                <div class="link-orig" th:text="${url.originalUrl}">original</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+                <span th:if="${url.disabled}"  class="status-badge disabled" style="font-size:0.65rem;">⛔</span>
+                <span th:unless="${url.disabled}" class="status-badge active" style="font-size:0.65rem;">✅</span>
+                <button class="btn-use" th:onclick="'useLink(\'' + ${url.shortUrl} + '\')'">Use</button>
+              </div>
+            </div>
+          </div>
+          <p th:if="${#lists.isEmpty(urls)}" style="color:var(--t3);text-align:center;padding:1.5rem 0;font-size:0.88rem;">
+            No links yet. <a href="/home" style="color:var(--p4);font-weight:700;">Create one →</a>
+          </p>
+        </div>
+
+        <!-- Info box -->
+        <div style="background:var(--p-tint);border:1px solid rgba(124,58,237,0.2);border-radius:var(--r);padding:1rem 1.2rem;">
+          <p style="font-size:0.83rem;color:var(--p3);font-weight:600;margin-bottom:0.3rem;">📱 Instagram Bio Tip</p>
+          <p style="font-size:0.8rem;color:var(--t2);line-height:1.5;">
+            Instagram only allows one clickable link in your bio. Use a TrimURL short link to keep it clean and trackable. The preview on the right shows exactly how it will appear to your followers.
+          </p>
+        </div>
       </div>
-    </div>
+
+      <!-- RIGHT: Instagram phone mockup -->
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+
+            <!-- IG Header -->
+            <div class="ig-header">
+              <div class="ig-wordmark">Instagram</div>
+              <div class="ig-header-icons">
+                <svg class="ig-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <svg class="ig-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+            </div>
+
+            <!-- Stories -->
+            <div class="ig-stories">
+              <div class="story-item">
+                <div class="story-ring">
+                  <div class="story-avatar" style="background:linear-gradient(135deg,#833ab4,#fd1d1d);">
+                    <span style="color:#fff;font-size:0.7rem;font-weight:800;">+</span>
+                  </div>
+                </div>
+                <span class="story-label">Your story</span>
+              </div>
+              <div class="story-item">
+                <div class="story-ring">
+                  <div class="story-avatar" style="background:linear-gradient(135deg,#f9ce34,#ee2a7b);">
+                    <span style="color:#fff;font-weight:800;">A</span>
+                  </div>
+                </div>
+                <span class="story-label">ada_l</span>
+              </div>
+              <div class="story-item">
+                <div class="story-ring seen">
+                  <div class="story-avatar" style="background:linear-gradient(135deg,#4facfe,#00f2fe);">
+                    <span style="color:#fff;font-weight:800;">M</span>
+                  </div>
+                </div>
+                <span class="story-label">marie</span>
+              </div>
+              <div class="story-item">
+                <div class="story-ring">
+                  <div class="story-avatar" style="background:linear-gradient(135deg,#6d28d9,#3b82f6);">
+                    <span style="color:#fff;font-weight:800;">T</span>
+                  </div>
+                </div>
+                <span class="story-label">techblog</span>
+              </div>
+            </div>
+
+            <!-- Post -->
+            <div class="ig-post">
+              <div class="ig-post-header">
+                <div class="post-avatar" id="igAvatar">T</div>
+                <div class="post-user">
+                  <div class="post-username" id="igUsername">trimurl_user</div>
+                  <div class="post-location">Link in bio ↓</div>
+                </div>
+                <span class="post-dots">···</span>
+              </div>
+
+              <!-- Post image area with link preview -->
+              <div class="ig-post-image">
+                <div class="post-link-display">
+                  <span class="post-link-icon">🔗</span>
+                  <div class="post-link-label">Link in Bio</div>
+                  <div class="post-link-url" id="igLinkDisplay">your-short-link.here</div>
+                  <div class="post-link-cta">Tap Link in Bio →</div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="ig-post-actions">
+                <button class="ig-action" id="likeBtn" onclick="toggleLike()">
+                  <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </button>
+                <button class="ig-action">
+                  <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </button>
+                <button class="ig-action">
+                  <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+                <button class="ig-action ig-action-save">
+                  <svg viewBox="0 0 24 24"><polygon points="19 21 12 16 5 21 5 3 19 3 19 21"/></svg>
+                </button>
+              </div>
+              <div class="ig-post-likes" id="igLikes">1,284 likes</div>
+              <div class="ig-post-caption">
+                <span id="igCaptionUser">trimurl_user</span>
+                &nbsp;Check the link in my bio! 🔗✨
+                <span class="ig-link-text" id="igLinkTextCaption"></span>
+              </div>
+              <div class="ig-post-time">2 hours ago</div>
+            </div>
+
+            <!-- IG bottom nav -->
+            <div class="ig-nav">
+              <button class="ig-nav-btn active">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </button>
+              <button class="ig-nav-btn">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </button>
+              <button class="ig-nav-btn">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+              </button>
+              <button class="ig-nav-btn">
+                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </button>
+              <button class="ig-nav-btn">
+                <div class="ig-nav-profile"></div>
+              </button>
+            </div>
+
+          </div><!-- /phone-screen -->
+        </div><!-- /phone -->
+      </div><!-- /phone-wrap -->
+
+    </div><!-- /test-grid -->
   </div>
 </main>
 <footer><p>© 2026 TrimURL</p></footer>
+<script>
+function showToast(msg,type='info'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.animation='toastOut 0.3s ease forwards';setTimeout(()=>t.remove(),300)},4500);
+}
+
+// Update Instagram mockup with a link
+function updateIgMockup(url) {
+  const display = document.getElementById('igLinkDisplay');
+  const caption = document.getElementById('igLinkTextCaption');
+  // Show just the meaningful part
+  let short = url;
+  try { short = new URL(url).hostname + new URL(url).pathname; } catch(e) {}
+  display.textContent = short;
+  caption.textContent = ' ' + short;
+}
+
+// Use a link from the list
+function useLink(url) {
+  document.getElementById('testInput').value = url;
+  updateIgMockup(url);
+  showToast('📲 Link loaded into tester and Instagram preview!', 'success');
+}
+
+// Test a short link
+async function testLink() {
+  const input = document.getElementById('testInput');
+  const result = document.getElementById('testResult');
+  const url = input.value.trim();
+
+  if (!url) {
+    result.textContent = '⚠️ Please enter a URL to test.';
+    result.className = 'test-result show invalid';
+    return;
+  }
+
+  result.textContent = '🔄 Checking link...';
+  result.className = 'test-result show checking';
+  updateIgMockup(url);
+
+  try {
+    const res = await fetch('/api/check-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const d = await res.json();
+
+    if (d.secure) {
+      result.textContent = '✅ Link is valid and secure! This link will work perfectly in Instagram bio, Twitter, and anywhere else.';
+      result.className = 'test-result show valid';
+    } else {
+      result.textContent = '⚠️ ' + d.message;
+      result.className = 'test-result show invalid';
+    }
+  } catch(e) {
+    result.textContent = '❌ Could not verify link. Check the URL and try again.';
+    result.className = 'test-result show invalid';
+  }
+}
+
+// Like button toggle
+function toggleLike() {
+  const btn = document.getElementById('likeBtn');
+  const likes = document.getElementById('igLikes');
+  btn.classList.toggle('liked');
+  likes.textContent = btn.classList.contains('liked') ? '1,285 likes' : '1,284 likes';
+}
+
+// Allow enter key on tester input
+document.getElementById('testInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') testLink();
+});
+
+// Pre-fill with first URL if available
+(function() {
+  const firstLink = document.querySelector('.link-short');
+  if (firstLink) {
+    const url = firstLink.href;
+    document.getElementById('testInput').value = url;
+    updateIgMockup(url);
+  }
+})();
+</script>
 </body>
 </html>

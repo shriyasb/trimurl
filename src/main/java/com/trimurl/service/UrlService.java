@@ -123,6 +123,15 @@ public class UrlService {
         urlRepository.findByShortCode(shortCode).filter(d -> userId.equals(d.getUserId())).ifPresent(urlRepository::delete);
     }
 
+    // FIX 3: immediate disable
+    public void disableNow(String shortCode, String userId) {
+        urlRepository.findByShortCode(shortCode).filter(d -> userId.equals(d.getUserId())).ifPresent(doc -> {
+            doc.setDisabled(true);
+            doc.setScheduledDisableAt(null);
+            urlRepository.save(doc);
+        });
+    }
+
     public void toggleUrl(String shortCode, String userId) {
         urlRepository.findByShortCode(shortCode).filter(d -> userId.equals(d.getUserId())).ifPresent(doc -> {
             doc.setDisabled(!doc.isDisabled());
@@ -138,7 +147,6 @@ public class UrlService {
         });
     }
 
-    // Enable a disabled link
     public void enableUrl(String shortCode, String userId) {
         urlRepository.findByShortCode(shortCode).filter(d -> userId.equals(d.getUserId())).ifPresent(doc -> {
             doc.setDisabled(false);
@@ -147,13 +155,33 @@ public class UrlService {
         });
     }
 
-    // Auto-disable links every 60 seconds
+    // Runs every 60s — auto-disable scheduled links + detect expiry warning (1hr before)
     @Scheduled(fixedRate = 60000)
     public void processScheduledDisables() {
-        urlRepository.findAll().stream().filter(UrlDocument::shouldBeDisabledNow).forEach(doc -> {
-            doc.setDisabled(true);
-            doc.setScheduledDisableAt(null);
-            urlRepository.save(doc);
+        Instant now = Instant.now();
+        Instant oneHourFromNow = now.plusSeconds(3600);
+
+        urlRepository.findAll().forEach(doc -> {
+            boolean changed = false;
+
+            // Auto-disable when scheduled time has passed
+            if (doc.shouldBeDisabledNow()) {
+                doc.setDisabled(true);
+                doc.setScheduledDisableAt(null);
+                changed = true;
+            }
+
+            // FIX 4: Mark links whose expiry is within 1 hour so dashboard can warn user
+            // We store a flag: nearingExpiry = true when expiryDate is within 1hr and not yet expired
+            if (!doc.isDisabled() && doc.getExpiryDate() != null) {
+                boolean nearingExpiry = doc.getExpiryDate().isAfter(now) && doc.getExpiryDate().isBefore(oneHourFromNow);
+                if (nearingExpiry != doc.isNearingExpiry()) {
+                    doc.setNearingExpiry(nearingExpiry);
+                    changed = true;
+                }
+            }
+
+            if (changed) urlRepository.save(doc);
         });
     }
 
@@ -177,7 +205,6 @@ public class UrlService {
             boolean isRawIP    = host.matches("\\d+\\.\\d+\\.\\d+\\.\\d+");
 
             boolean secure = isHttps && !hasKeyword && !hasBadTLD && !isRawIP;
-
             result.put("secure", secure);
             result.put("https", isHttps);
             result.put("host", host);
@@ -216,6 +243,7 @@ public class UrlService {
         r.setUserId(doc.getUserId());
         r.setDisabled(doc.isDisabled());
         r.setScheduledDisableAt(doc.getScheduledDisableAt());
+        r.setNearingExpiry(doc.isNearingExpiry());
         return r;
     }
 }
