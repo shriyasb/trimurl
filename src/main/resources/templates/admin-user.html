@@ -23,36 +23,30 @@
 <main>
   <div class="container" style="max-width:1100px;">
     <a href="/admin" class="back-link">← Back to Admin Panel</a>
-    <div class="page-title">User Detail</div>
-
+    <div class="page-title">User <span>Detail</span></div>
     <div class="user-header" th:if="${targetUser != null}">
       <div class="user-avatar-lg" th:text="${#strings.toUpperCase(#strings.substring(targetUser.name,0,1))}">U</div>
       <div class="user-meta">
         <h2 th:text="${targetUser.name}">Name</h2>
         <p th:text="${targetUser.email}">email</p>
         <p style="margin-top:0.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
-          <span>Role:</span>
-          <span class="role-pill" th:classappend="${targetUser.role == 'ADMIN'} ? 'admin' : 'user'" th:text="${targetUser.role}">USER</span>
-          <span>Status:</span>
-          <span th:if="${targetUser.accountDisabled}"  class="status-badge disabled" style="font-size:0.7rem;">⛔ Disabled</span>
-          <span th:unless="${targetUser.accountDisabled}" class="status-badge active" style="font-size:0.7rem;">✅ Active</span>
+          Role: <span class="role-pill" th:classappend="${targetUser.role == 'ADMIN'} ? 'admin' : 'user'" th:text="${targetUser.role}">USER</span>
+          &nbsp;Status:
+          <span th:if="${targetUser.accountDisabled}"  class="status-badge disabled" style="font-size:0.68rem;">⛔ Disabled</span>
+          <span th:unless="${targetUser.accountDisabled}" class="status-badge active" style="font-size:0.68rem;">✅ Active</span>
         </p>
       </div>
     </div>
-
     <div class="section">
       <h2>Links by this User (<span th:text="${#lists.size(links)}">0</span>)</h2>
       <div class="table-container">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Short Code</th><th>Original URL</th><th>Clicks</th>
-              <th>Created</th><th>Status</th><th>Actions</th>
-            </tr>
+            <tr><th>Short Code</th><th>Original URL</th><th>Clicks</th><th>Created</th><th>Status</th><th>Actions</th></tr>
           </thead>
           <tbody>
             <tr th:each="link : ${links}">
-              <td style="color:var(--orange);font-weight:700;font-size:0.85rem;" th:text="${link.shortCode}">code</td>
+              <td style="color:var(--p4);font-weight:700;font-size:0.84rem;" th:text="${link.shortCode}">code</td>
               <td class="truncate" th:text="${link.originalUrl}">url</td>
               <td th:text="${link.totalClicks}">0</td>
               <td class="time-cell created-time" th:attr="data-ts=${link.createdAt}">—</td>
@@ -79,7 +73,7 @@
               </td>
             </tr>
             <tr th:if="${#lists.isEmpty(links)}">
-              <td colspan="6" class="empty-message">This user has no links yet.</td>
+              <td colspan="6" class="empty-message">This user has no links.</td>
             </tr>
           </tbody>
         </table>
@@ -90,7 +84,7 @@
 <footer><p>© 2026 TrimURL — Admin Panel</p></footer>
 <script>
 document.querySelectorAll('.created-time').forEach(el=>{
-  const ts=el.dataset.ts; if(!ts) return;
+  const ts=el.dataset.ts;if(!ts)return;
   el.textContent=new Date(ts).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
 });
 </script>

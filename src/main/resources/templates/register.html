@@ -7,18 +7,23 @@
 </head>
 <body>
 <header>
-  <div class="logo"><span class="logo-icon">🔗</span>
-    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span></div>
+  <div class="logo">
+    <span class="logo-icon">🔗</span>
+    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+  </div>
 </header>
 <main>
   <div class="container">
-    <div class="hero"><h1>Create Account</h1><p>Start shortening and tracking URLs for free</p></div>
+    <div class="hero">
+      <h1>Create <span>Account</span></h1>
+      <p>Start shortening and tracking URLs for free</p>
+    </div>
     <div class="card">
       <div th:if="${error}" class="alert error" th:text="${error}"></div>
       <form th:action="@{/register}" method="post" id="regForm">
         <div class="form-group">
           <label class="form-label">Full Name</label>
-          <input type="text" name="name" placeholder="Ada Lovelace" required>
+          <input type="text" name="name" placeholder="Your name" required>
         </div>
         <div class="form-group">
           <label class="form-label">Email Address</label>
@@ -34,7 +39,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Account Type</label>
-          <div class="role-select-wrapper" id="roleWrap">
+          <div class="role-select-wrapper">
             <label class="role-option selected" id="optUser">
               <input type="radio" name="role" value="USER" checked>
               <span class="role-icon">👤</span>User
@@ -45,19 +50,18 @@
             </label>
           </div>
         </div>
-        <button type="submit" class="btn-primary">Create Account →</button>
+        <button type="submit" class="btn-primary">Create Account</button>
       </form>
       <p class="auth-switch">Already have an account? <a th:href="@{/login}">Sign In</a></p>
     </div>
   </div>
 </main>
-<footer><p>© 2026 TrimURL — Shorten smarter.</p></footer>
+<footer><p>© 2026 TrimURL</p></footer>
 <script>
 document.querySelectorAll('.role-option').forEach(opt=>{
   opt.addEventListener('click',()=>{
-    document.querySelectorAll('.role-option').forEach(o=>{o.classList.remove('selected','selected-admin');});
-    const isAdmin=opt.querySelector('input').value==='ADMIN';
-    opt.classList.add(isAdmin?'selected-admin':'selected');
+    document.querySelectorAll('.role-option').forEach(o=>o.classList.remove('selected','selected-admin'));
+    opt.classList.add(opt.querySelector('input').value==='ADMIN'?'selected-admin':'selected');
   });
 });
 document.getElementById('regForm').addEventListener('submit',e=>{

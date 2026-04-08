@@ -8,15 +8,20 @@
 <body>
 <div id="toast-container"></div>
 <header>
-  <div class="logo"><span class="logo-icon">🔗</span>
-    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span></div>
+  <div class="logo">
+    <span class="logo-icon">🔗</span>
+    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+  </div>
 </header>
 <main>
   <div class="container">
-    <div class="hero"><h1>Welcome Back</h1><p>Sign in to manage your short links</p></div>
+    <div class="hero">
+      <h1>Welcome <span>Back</span></h1>
+      <p>Sign in to manage and track your short links</p>
+    </div>
     <div class="card">
       <div th:if="${param.registered}" class="alert success">🎉 Account created! You can now sign in.</div>
-      <div th:if="${param.logout}"     class="alert success">👋 You've been signed out successfully.</div>
+      <div th:if="${param.logout}"     class="alert success">👋 You've been signed out.</div>
       <div th:if="${error}"            class="alert error"   th:text="${error}"></div>
       <form th:action="@{/login}" method="post">
         <div class="form-group">
@@ -27,19 +32,23 @@
           <label class="form-label">Password</label>
           <input type="password" name="password" placeholder="••••••••" required>
         </div>
-        <button type="submit" class="btn-primary" style="margin-top:0.4rem;">Sign In →</button>
+        <button type="submit" class="btn-primary" style="margin-top:0.5rem">Sign In</button>
       </form>
-      <div class="role-note">🔐 Your dashboard is determined by your account role</div>
+      <div class="role-note">🔐 Dashboard shown based on your account role</div>
       <p class="auth-switch">No account? <a th:href="@{/register}">Create one free</a></p>
     </div>
   </div>
 </main>
-<footer><p>© 2026 TrimURL — Shorten smarter.</p></footer>
+<footer><p>© 2026 TrimURL</p></footer>
 <script>
-function showToast(msg,type='info'){const c=document.getElementById('toast-container');const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>{t.style.animation='toastOut 0.3s ease forwards';setTimeout(()=>t.remove(),300)},3800);}
+function showToast(msg,type='info'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.animation='toastOut 0.3s ease forwards';setTimeout(()=>t.remove(),300)},4000);
+}
 const p=new URLSearchParams(location.search);
-if(p.get('registered'))showToast('🎉 Account created — sign in now!','success');
-if(p.get('logout'))showToast('👋 Signed out successfully.','info');
+if(p.get('registered'))showToast('🎉 Account created — sign in!','success');
+if(p.get('logout'))showToast('👋 Signed out.','info');
 </script>
 </body>
 </html>

@@ -8,8 +8,10 @@
 <body>
 <div id="toast-container"></div>
 <header>
-  <div class="logo"><span class="logo-icon">🔗</span>
-    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span></div>
+  <div class="logo">
+    <span class="logo-icon">🔗</span>
+    <span class="logo-text"><span class="bold">TRIM</span><span class="light">URL</span></span>
+  </div>
   <nav>
     <a href="/home" class="active">Home</a>
     <a href="/dashboard">Dashboard</a>
@@ -21,8 +23,8 @@
 <main>
   <div class="container">
     <div class="hero">
-      <h1>Shorten Your Links</h1>
-      <p>Paste, verify security, and get a crisp short URL instantly</p>
+      <h1>Shorten <span>Your Links</span></h1>
+      <p>Paste, check security, and get a short URL instantly</p>
     </div>
     <div class="card">
       <div th:if="${error}"    class="alert error"   th:text="${error}"></div>
@@ -33,62 +35,110 @@
           <button type="button" class="btn-copy" onclick="copyUrl()">Copy</button>
         </div>
       </div>
+
       <form th:action="@{/shorten}" method="post" id="shortenForm">
         <div class="form-group">
           <label class="form-label">Long URL</label>
           <div class="url-input-row">
-            <input type="url" name="url" id="urlInput" placeholder="https://example.com/very-long-url..." required>
-            <button type="button" class="btn-check" onclick="checkSecurity()">🔍 Check Security</button>
+            <input type="url" name="url" id="urlInput" placeholder="https://example.com/your-long-url" required>
+            <button type="button" class="btn-check" id="checkBtn" onclick="checkSecurity()">🔍 Check</button>
           </div>
           <div id="securityResult" class="security-badge hidden"></div>
         </div>
         <div class="form-group">
-          <label class="form-label">Custom Short Code <span style="color:var(--text-3);font-weight:400;text-transform:none;">(optional)</span></label>
-          <input type="text" name="customShortCode" placeholder="e.g., mylink">
+          <label class="form-label">Custom Short Code <span style="color:var(--t3);font-weight:500;text-transform:none;font-size:0.75rem;">(optional)</span></label>
+          <input type="text" name="customShortCode" placeholder="e.g. mylink">
         </div>
         <div class="form-group">
-          <label class="form-label">Expiry Date <span style="color:var(--text-3);font-weight:400;text-transform:none;">(optional)</span></label>
+          <label class="form-label">Expiry Date <span style="color:var(--t3);font-weight:500;text-transform:none;font-size:0.75rem;">(optional)</span></label>
           <input type="datetime-local" name="expiryDateStr">
           <small class="form-hint">Link stops working after this date</small>
         </div>
         <button type="submit" class="btn-primary" id="shortenBtn" disabled>✂️ Shorten URL</button>
-        <p style="text-align:center;color:var(--text-3);font-size:0.78rem;margin-top:0.7rem;">Security check required before shortening</p>
+        <p style="text-align:center;color:var(--t3);font-size:0.77rem;margin-top:0.6rem;">Security check must pass before shortening</p>
       </form>
     </div>
   </div>
 </main>
-<footer><p>© 2026 TrimURL — Shorten smarter.</p></footer>
+<footer><p>© 2026 TrimURL</p></footer>
 <script>
 function showToast(msg,type='info'){
   const c=document.getElementById('toast-container');
   const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);
-  setTimeout(()=>{t.style.animation='toastOut 0.3s ease forwards';setTimeout(()=>t.remove(),300)},4200);
+  setTimeout(()=>{t.style.animation='toastOut 0.3s ease forwards';setTimeout(()=>t.remove(),300)},4500);
 }
 function copyUrl(){
   const i=document.getElementById('shortUrlInput');i.select();
   navigator.clipboard.writeText(i.value).catch(()=>document.execCommand('copy'));
-  showToast('📋 Copied to clipboard!','success');
+  showToast('📋 Copied!','success');
 }
+
 let secOk=false;
+
 async function checkSecurity(){
   const url=document.getElementById('urlInput').value.trim();
   const badge=document.getElementById('securityResult');
   const btn=document.getElementById('shortenBtn');
-  if(!url){badge.textContent='⚠️ Please enter a URL first';badge.className='security-badge warning';return;}
-  badge.textContent='🔄 Checking security…';badge.className='security-badge info';
+  const checkBtn=document.getElementById('checkBtn');
+
+  if(!url){
+    badge.textContent='⚠️ Please enter a URL first';
+    badge.className='security-badge warning';
+    return;
+  }
+
+  // Show loading state
+  checkBtn.textContent='Checking…';
+  checkBtn.disabled=true;
+  badge.textContent='🔄 Checking security…';
+  badge.className='security-badge info';
+  secOk=false;
+  btn.disabled=true;
+
   try{
-    const res=await fetch('/api/check-url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+    const res=await fetch('/api/check-url',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({url:url})
+    });
+
+    if(!res.ok){
+      throw new Error('Server returned '+res.status);
+    }
+
     const d=await res.json();
-    badge.textContent=d.message;badge.className='security-badge '+(d.secure?'success':'danger');
-    secOk=d.secure;btn.disabled=!d.secure;
-    showToast(d.message,d.secure?'success':'danger');
-  }catch(e){
-    badge.textContent='❌ Could not verify. Try again.';badge.className='security-badge danger';
-    secOk=false;btn.disabled=true;
+
+    badge.textContent=d.message;
+    badge.className='security-badge '+(d.secure?'success':'danger');
+    secOk=!!d.secure;
+    btn.disabled=!d.secure;
+    showToast(d.message, d.secure?'success':'danger');
+
+  }catch(err){
+    console.error('Security check error:',err);
+    badge.textContent='❌ Security check failed. Please try again.';
+    badge.className='security-badge danger';
+    secOk=false;
+    btn.disabled=true;
+    showToast('❌ Security check failed. Try again.','danger');
+  }finally{
+    checkBtn.textContent='🔍 Check';
+    checkBtn.disabled=false;
   }
 }
+
+// Re-lock shorten button if user edits URL after check
 document.getElementById('urlInput').addEventListener('input',()=>{
-  if(secOk){secOk=false;document.getElementById('shortenBtn').disabled=true;document.getElementById('securityResult').className='security-badge hidden';}
+  if(secOk){
+    secOk=false;
+    document.getElementById('shortenBtn').disabled=true;
+    document.getElementById('securityResult').className='security-badge hidden';
+  }
+});
+
+// Allow Enter key in URL field to trigger check
+document.getElementById('urlInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'){e.preventDefault();checkSecurity();}
 });
 </script>
 </body>
