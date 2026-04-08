@@ -242,6 +242,7 @@ public class UrlService {
         response.setLastAccessed(document.getLastAccessed());
         response.setQrCode(document.getQrCode());
         response.setUserId(document.getUserId());
+        response.setDisabled(document.isDisabled());
         return response;
     }
 }

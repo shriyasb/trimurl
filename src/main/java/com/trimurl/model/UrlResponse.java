@@ -2,9 +2,6 @@ package com.trimurl.model;
 
 import java.time.Instant;
 
-/**
- * Response for URL data.
- */
 public class UrlResponse {
     private String shortCode;
     private String shortUrl;
@@ -15,6 +12,7 @@ public class UrlResponse {
     private Instant lastAccessed;
     private String qrCode;
     private String userId;
+    private boolean disabled;
 
     public UrlResponse() {
     }
@@ -53,4 +51,7 @@ public class UrlResponse {
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+
+    public boolean isDisabled() { return disabled; }
+    public void setDisabled(boolean disabled) { this.disabled = disabled; }
 }
