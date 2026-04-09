@@ -3,276 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Link Preview – TrimURL</title>
+  <title>Instagram Bio Preview – TrimURL</title>
   <link rel="stylesheet" th:href="@{/css/dashboard.css}">
   <style>
-    .test-layout {
+    /* ── Page layout ── */
+    .preview-wrap {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 300px 1fr;
       gap: 2rem;
       align-items: start;
+      width: 100%;
     }
-    @media(max-width:900px){ .test-layout{ grid-template-columns:1fr; } }
+    @media(max-width:860px){
+      .preview-wrap { grid-template-columns: 1fr; }
+      .phone-col { order: -1; display: flex; justify-content: center; }
+    }
 
-    /* ─── Phone Shell ─── */
-    .phone-shell {
-      position: sticky;
-      top: 100px;
-      display: flex;
-      justify-content: center;
-    }
+    /* ── Phone shell ── */
     .phone {
-      width: 320px;
+      width: 270px;
+      flex-shrink: 0;
       background: #1c1c1e;
-      border-radius: 50px;
-      padding: 14px;
+      border-radius: 44px;
+      padding: 12px;
       box-shadow:
         0 0 0 1.5px #3a3a3c,
-        0 0 0 4px #1c1c1e,
-        0 40px 100px rgba(0,0,0,0.8),
-        inset 0 0 0 1px rgba(255,255,255,0.06);
+        0 0 0 3.5px #1c1c1e,
+        0 32px 80px rgba(0,0,0,0.8),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
       position: relative;
     }
-    /* Dynamic island */
     .dynamic-island {
       position: absolute;
-      top: 18px; left: 50%; transform: translateX(-50%);
-      width: 120px; height: 34px;
-      background: #000;
-      border-radius: 20px;
-      z-index: 10;
-      display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; gap: 6px;
+      top: 16px; left: 50%; transform: translateX(-50%);
+      width: 100px; height: 30px;
+      background: #000; border-radius: 16px; z-index: 10;
     }
-    .di-camera { width: 12px; height: 12px; border-radius: 50%; background: #1a1a1a; border: 2px solid #2a2a2a; }
     .phone-screen {
       background: #fff;
-      border-radius: 38px;
+      border-radius: 34px;
       overflow: hidden;
-      height: 640px;
-      position: relative;
+      height: 560px;
       display: flex;
       flex-direction: column;
     }
-    .phone-status-bar {
-      height: 50px;
-      background: #fff;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      padding: 0 24px 8px;
-      flex-shrink: 0;
+    .phone-status {
+      height: 46px; background: #fff;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      padding: 0 20px 8px; flex-shrink: 0;
     }
-    .status-time { font-size: 0.78rem; font-weight: 700; color: #000; font-family: 'Outfit', sans-serif; }
-    .status-icons { display: flex; gap: 5px; align-items: center; }
-    .status-icons svg { width: 16px; height: 16px; fill: #000; }
+    .status-time { font-size: 0.72rem; font-weight: 800; color: #000; font-family: -apple-system, sans-serif; }
+    .status-icons { display: flex; gap: 4px; align-items: center; }
 
-    /* ─── Instagram Profile Screen ─── */
-    .ig-screen { flex: 1; overflow-y: auto; background: #fff; scrollbar-width: none; }
-    .ig-screen::-webkit-scrollbar { display: none; }
+    /* ── IG UI ── */
+    .ig-scroll { flex: 1; overflow-y: auto; background: #fff; scrollbar-width: none; }
+    .ig-scroll::-webkit-scrollbar { display: none; }
 
-    /* IG Top Bar */
-    .ig-topbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px 8px;
-      border-bottom: 0.5px solid #dbdbdb;
-      background: #fff;
+    .ig-header {
       position: sticky; top: 0; z-index: 5;
+      background: #fff; border-bottom: 0.5px solid #dbdbdb;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px;
     }
-    .ig-topbar-left { display: flex; align-items: center; gap: 6px; }
-    .ig-lock { width: 12px; height: 12px; stroke: #262626; fill: none; stroke-width: 2.5; }
-    .ig-handle { font-size: 0.85rem; font-weight: 800; color: #262626; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-    .ig-topbar-right { display: flex; gap: 14px; }
-    .ig-topbar-right svg { width: 22px; height: 22px; stroke: #262626; fill: none; stroke-width: 1.8; stroke-linecap: round; }
+    .ig-username-bar { display: flex; align-items: center; gap: 4px; }
+    .ig-username { font-size: 0.82rem; font-weight: 800; color: #262626; font-family: -apple-system, sans-serif; }
+    .ig-hdr-icons { display: flex; gap: 12px; }
+    .ig-hdr-icons svg { width: 20px; height: 20px; stroke: #262626; fill: none; stroke-width: 1.8; stroke-linecap: round; }
 
-    /* Profile Section */
-    .ig-profile-section { padding: 14px 14px 6px; }
-    .ig-profile-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    /* Profile area */
+    .ig-profile { padding: 12px 12px 0; }
+    .ig-profile-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 
-    .ig-avatar-wrap {
-      position: relative; flex-shrink: 0;
-    }
-    .ig-avatar {
-      width: 78px; height: 78px; border-radius: 50%;
+    .ig-avatar-ring {
+      width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
       background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-      padding: 2.5px;
-      display: flex; align-items: center; justify-content: center;
+      padding: 2px; display: flex; align-items: center; justify-content: center;
     }
     .ig-avatar-inner {
-      width: 100%; height: 100%; border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border: 3px solid #fff;
+      width: 100%; height: 100%; border-radius: 50%; border: 2.5px solid #fff;
+      background: linear-gradient(135deg, #6d28d9, #3b82f6);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; font-weight: 800; color: #fff;
-      font-family: -apple-system, sans-serif;
-      overflow: hidden;
+      font-size: 1.5rem; font-weight: 800; color: #fff; font-family: -apple-system, sans-serif;
     }
-    .ig-avatar-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
-    .ig-stats { flex: 1; display: flex; justify-content: space-around; }
-    .ig-stat { text-align: center; }
-    .ig-stat-num { font-size: 0.95rem; font-weight: 800; color: #262626; display: block; font-family: -apple-system, sans-serif; }
-    .ig-stat-lbl { font-size: 0.72rem; color: #262626; font-family: -apple-system, sans-serif; }
+    .ig-counters { flex: 1; display: flex; justify-content: space-around; }
+    .ig-counter { text-align: center; }
+    .ig-count { font-size: 0.88rem; font-weight: 800; color: #262626; display: block; font-family: -apple-system, sans-serif; }
+    .ig-count-lbl { font-size: 0.65rem; color: #262626; font-family: -apple-system, sans-serif; }
 
-    .ig-name { font-size: 0.82rem; font-weight: 800; color: #262626; font-family: -apple-system, sans-serif; margin-bottom: 2px; }
-    .ig-bio-text { font-size: 0.78rem; color: #262626; line-height: 1.4; font-family: -apple-system, sans-serif; margin-bottom: 4px; }
+    .ig-display-name { font-size: 0.77rem; font-weight: 800; color: #262626; font-family: -apple-system, sans-serif; margin-bottom: 2px; }
+    .ig-bio { font-size: 0.73rem; color: #262626; line-height: 1.4; font-family: -apple-system, sans-serif; margin-bottom: 4px; white-space: pre-wrap; }
 
-    /* THE BIO LINK — this is what we're editing */
-    .ig-bio-link {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 0.82rem; font-weight: 700; color: #00376b;
+    /* THE LINK — this must work */
+    .ig-link {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 0.78rem; font-weight: 700; color: #00376b;
       font-family: -apple-system, sans-serif;
-      word-break: break-all; line-height: 1.3;
       text-decoration: none; cursor: pointer;
-      transition: opacity 0.15s;
+      word-break: break-all; line-height: 1.3;
+      padding: 2px 0;
     }
-    .ig-bio-link:hover { opacity: 0.75; }
-    .ig-bio-link svg { flex-shrink: 0; width: 12px; height: 12px; fill: #00376b; }
+    .ig-link:active { opacity: 0.6; }
+    .ig-link-icon { width: 11px; height: 11px; fill: #00376b; flex-shrink: 0; }
+    .ig-link-placeholder { color: #999; font-style: italic; font-weight: 400; }
 
-    /* Action buttons row */
-    .ig-actions { display: flex; gap: 6px; margin: 10px 0 8px; }
-    .ig-btn {
-      flex: 1; padding: 6px 0; border-radius: 8px;
-      font-size: 0.78rem; font-weight: 700; text-align: center;
-      cursor: pointer; font-family: -apple-system, sans-serif;
-      border: none;
-    }
+    .ig-btns { display: flex; gap: 5px; margin: 8px 0; }
+    .ig-btn { flex: 1; padding: 5px 0; border-radius: 7px; font-size: 0.73rem; font-weight: 700; text-align: center; cursor: pointer; font-family: -apple-system, sans-serif; border: 1px solid transparent; }
     .ig-btn-follow { background: #0095f6; color: #fff; }
-    .ig-btn-msg { background: #efefef; color: #262626; }
-    .ig-btn-more { background: #efefef; color: #262626; padding: 6px 10px; flex: 0; }
+    .ig-btn-msg { background: #efefef; color: #262626; border-color: #dbdbdb; }
+    .ig-btn-more { background: #efefef; color: #262626; border-color: #dbdbdb; flex: 0; padding: 5px 8px; }
 
-    /* Story highlights */
-    .ig-highlights { display: flex; gap: 14px; padding: 8px 14px 12px; overflow-x: auto; scrollbar-width: none; }
+    /* Highlights */
+    .ig-highlights { display: flex; gap: 12px; padding: 8px 12px 10px; overflow-x: auto; scrollbar-width: none; }
     .ig-highlights::-webkit-scrollbar { display: none; }
-    .highlight { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
-    .highlight-ring {
-      width: 58px; height: 58px; border-radius: 50%;
-      background: #efefef; border: 2px solid #dbdbdb;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem;
-    }
-    .highlight-lbl { font-size: 0.62rem; color: #262626; font-family: -apple-system, sans-serif; }
+    .ig-highlight { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .ig-highlight-ring { width: 52px; height: 52px; border-radius: 50%; background: #efefef; border: 1.5px solid #dbdbdb; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .ig-highlight-lbl { font-size: 0.58rem; color: #262626; font-family: -apple-system, sans-serif; }
 
-    /* Posts grid */
-    .ig-divider { height: 0.5px; background: #dbdbdb; margin: 0; }
-    .ig-tabs { display: flex; border-bottom: 0.5px solid #dbdbdb; }
-    .ig-tab { flex: 1; display: flex; justify-content: center; padding: 10px 0; cursor: pointer; }
+    /* Grid */
+    .ig-tabs-row { display: flex; border-top: 0.5px solid #dbdbdb; border-bottom: 0.5px solid #dbdbdb; }
+    .ig-tab { flex: 1; display: flex; justify-content: center; padding: 8px 0; cursor: pointer; }
     .ig-tab.active { border-bottom: 1.5px solid #262626; }
-    .ig-tab svg { width: 22px; height: 22px; stroke: #262626; fill: none; stroke-width: 1.6; }
-    .ig-tab.active svg { fill: #262626; }
-    .ig-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5px; }
-    .ig-post-thumb {
-      aspect-ratio: 1; overflow: hidden; cursor: pointer;
-      position: relative;
-    }
-    .ig-post-thumb div {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem;
-    }
-    .post-g1 { background: linear-gradient(135deg,#1a1a2e,#16213e); }
-    .post-g2 { background: linear-gradient(135deg,#0f3460,#533483); }
-    .post-g3 { background: linear-gradient(135deg,#2d1b69,#11998e); }
-    .post-g4 { background: linear-gradient(135deg,#fc466b,#3f5efb); }
-    .post-g5 { background: linear-gradient(135deg,#4776e6,#8e54e9); }
-    .post-g6 { background: linear-gradient(135deg,#0f2027,#203a43); }
+    .ig-tab svg { width: 18px; height: 18px; stroke: #8e8e8e; fill: none; stroke-width: 1.6; }
+    .ig-tab.active svg { stroke: #262626; }
+    .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
+    .ig-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .c1{background:linear-gradient(135deg,#1a1a2e,#16213e);}
+    .c2{background:linear-gradient(135deg,#0f3460,#533483);}
+    .c3{background:linear-gradient(135deg,#2d1b69,#11998e);}
+    .c4{background:linear-gradient(135deg,#fc466b,#3f5efb);}
+    .c5{background:linear-gradient(135deg,#4776e6,#8e54e9);}
+    .c6{background:linear-gradient(135deg,#0f2027,#203a43);}
 
-    /* IG Bottom Nav */
-    .ig-bottom-nav {
+    /* IG bottom nav */
+    .ig-nav {
       display: flex; justify-content: space-around; align-items: center;
-      padding: 8px 0 12px;
-      border-top: 0.5px solid #dbdbdb;
-      background: #fff;
-      flex-shrink: 0;
+      padding: 7px 0 10px; border-top: 0.5px solid #dbdbdb;
+      background: #fff; flex-shrink: 0;
     }
-    .ig-nav-item { padding: 4px 10px; cursor: pointer; display: flex; align-items: center; }
-    .ig-nav-item svg { width: 24px; height: 24px; stroke: #262626; fill: none; stroke-width: 1.8; stroke-linecap: round; }
-    .ig-nav-item.active svg { fill: #262626; stroke: none; }
-    .ig-nav-profile-pic { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg,#667eea,#764ba2); border: 2px solid #262626; }
+    .ig-nav-btn { padding: 3px 8px; cursor: pointer; display: flex; align-items: center; }
+    .ig-nav-btn svg { width: 22px; height: 22px; stroke: #262626; fill: none; stroke-width: 1.8; stroke-linecap: round; }
+    .ig-nav-btn.active svg { fill: #262626; stroke: none; }
+    .ig-nav-dot { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg,#6d28d9,#3b82f6); border: 1.5px solid #262626; }
 
-    /* ─── Right Panel ─── */
-    .controls-panel { display: flex; flex-direction: column; gap: 1.2rem; }
+    /* ── Controls ── */
+    .controls { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
 
-    .control-section {
+    .ctrl-card {
       background: var(--bg2);
       border: 1px solid var(--border-md);
       border-radius: var(--r-lg);
-      padding: 1.4rem 1.5rem;
-      position: relative;
+      padding: 1.2rem 1.3rem;
+      position: relative; overflow: hidden;
     }
-    .control-section::before {
+    .ctrl-card::before {
       content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
       background: linear-gradient(180deg,var(--p6),var(--b5));
       border-radius: 3px 0 0 3px;
     }
+    .ctrl-title { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px; color: var(--t3); margin-bottom: 0.7rem; font-family: 'Outfit', sans-serif; }
+    .ctrl-desc { color: var(--t2); font-size: 0.82rem; margin-bottom: 0.7rem; line-height: 1.5; }
 
-    .ctrl-label {
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.8px; color: var(--t3); margin-bottom: 0.6rem;
-      font-family: 'Outfit', sans-serif;
-    }
+    .ctrl-field { width: 100%; padding: 0.72rem 0.9rem; background: var(--bg-input); border: 1px solid var(--border-md); border-radius: var(--r); color: var(--t1); font-size: 0.88rem; font-family: 'Nunito', sans-serif; font-weight: 600; outline: none; transition: all 0.2s; box-sizing: border-box; }
+    .ctrl-field:focus { border-color: var(--p6); box-shadow: 0 0 0 3px rgba(124,58,237,0.18); background: rgba(109,40,217,0.05); }
+    .ctrl-field::placeholder { color: var(--t3); }
 
-    .ctrl-input {
-      width: 100%; padding: 0.78rem 1rem;
-      background: var(--bg-input); border: 1px solid var(--border-md);
-      border-radius: var(--r); color: var(--t1);
-      font-size: 0.9rem; font-family: 'Nunito', sans-serif; font-weight: 600;
-      outline: none; transition: all 0.2s;
-    }
-    .ctrl-input:focus {
-      border-color: var(--p6); box-shadow: 0 0 0 3px rgba(124,58,237,0.18);
-      background: rgba(109,40,217,0.05);
-    }
-    .ctrl-input::placeholder { color: var(--t3); }
+    .ctrl-row { display: flex; gap: 0.5rem; align-items: stretch; }
+    .ctrl-row .ctrl-field { flex: 1; min-width: 0; }
 
-    .ctrl-row { display: flex; gap: 0.5rem; }
-    .ctrl-row .ctrl-input { flex: 1; }
-
-    .btn-apply {
-      padding: 0.78rem 1.1rem; white-space: nowrap;
+    .btn-set {
+      flex-shrink: 0; padding: 0.72rem 1rem;
       background: linear-gradient(135deg,var(--p7),var(--p6));
       color: #fff; border: none; border-radius: var(--r);
-      cursor: pointer; font-weight: 700; font-size: 0.85rem;
+      cursor: pointer; font-weight: 700; font-size: 0.84rem;
       font-family: 'Nunito', sans-serif; transition: all 0.2s;
-      box-shadow: 0 3px 14px var(--p-glow);
-      flex-shrink: 0;
+      box-shadow: 0 3px 14px var(--p-glow); white-space: nowrap;
     }
-    .btn-apply:hover { transform: translateY(-1px); box-shadow: 0 5px 20px var(--p-glow); }
+    .btn-set:hover { transform: translateY(-1px); box-shadow: 0 5px 20px var(--p-glow); }
 
-    .btn-open-link {
-      width: 100%; padding: 0.78rem;
-      background: rgba(0,149,246,0.12);
-      border: 1px solid rgba(0,149,246,0.35);
+    .btn-open {
+      display: block; width: 100%; margin-top: 0.6rem;
+      padding: 0.68rem; text-align: center; text-decoration: none;
+      background: rgba(0,149,246,0.1); border: 1px solid rgba(0,149,246,0.3);
       color: #0095f6; border-radius: var(--r);
-      cursor: pointer; font-weight: 700; font-size: 0.88rem;
-      font-family: 'Nunito', sans-serif; transition: all 0.2s; margin-top: 0.6rem;
-      text-align: center; text-decoration: none; display: block;
+      font-weight: 700; font-size: 0.84rem; font-family: 'Nunito', sans-serif;
+      transition: all 0.18s; cursor: pointer;
     }
-    .btn-open-link:hover { background: rgba(0,149,246,0.2); }
+    .btn-open:hover { background: rgba(0,149,246,0.18); }
 
-    /* Saved links quick-pick */
-    .saved-link-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.6rem 0; border-bottom: 1px solid var(--border); gap: 0.5rem;
-    }
-    .saved-link-item:last-child { border-bottom: none; }
-    .saved-link-url { color: var(--p4); font-size: 0.82rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
-    .saved-link-orig { color: var(--t3); font-size: 0.74rem; }
-    .btn-pick {
-      flex-shrink: 0; padding: 0.26rem 0.6rem; border-radius: 7px;
-      background: var(--p-tint); border: 1px solid rgba(124,58,237,0.3);
-      color: var(--p4); font-size: 0.73rem; font-weight: 700;
-      cursor: pointer; transition: all 0.15s; font-family: 'Nunito', sans-serif;
-    }
-    .btn-pick:hover { background: rgba(124,58,237,0.2); }
+    .ctrl-fields-col { display: flex; flex-direction: column; gap: 0.5rem; }
 
-    .tip-box {
-      background: rgba(0,149,246,0.07);
-      border: 1px solid rgba(0,149,246,0.2);
-      border-radius: var(--r);
-      padding: 0.9rem 1rem;
-      font-size: 0.8rem; color: var(--b4); line-height: 1.55;
-    }
-    .tip-box strong { color: var(--t1); }
+    /* Saved links */
+    .saved-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0; border-bottom: 1px solid var(--border); }
+    .saved-item:last-child { border-bottom: none; }
+    .saved-url { color: var(--p4); font-size: 0.8rem; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .saved-orig { color: var(--t3); font-size: 0.72rem; }
+    .btn-use { flex-shrink: 0; padding: 0.24rem 0.55rem; border-radius: 7px; background: var(--p-tint); border: 1px solid rgba(124,58,237,0.3); color: var(--p4); font-size: 0.72rem; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; transition: all 0.15s; }
+    .btn-use:hover { background: rgba(124,58,237,0.22); }
+
+    .tip { background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--r); padding: 0.85rem 1rem; font-size: 0.79rem; color: var(--b4); line-height: 1.55; }
+    .tip strong { color: var(--t1); }
   </style>
 </head>
 <body>
@@ -292,293 +222,308 @@
   </nav>
 </header>
 
-<main style="align-items:flex-start; padding-top:2.2rem;">
-  <div class="container" style="max-width:960px;">
+<main style="align-items:flex-start; padding-top:2rem;">
+  <div class="container" style="max-width:920px; width:100%;">
     <div class="page-title">Instagram <span>Bio Preview</span></div>
 
-    <div class="test-layout">
+    <div class="preview-wrap">
 
-      <!-- ══ LEFT: Instagram Phone ══ -->
-      <div class="phone-shell">
+      <!-- ══ Phone ══ -->
+      <div class="phone-col">
         <div class="phone">
-          <div class="dynamic-island">
-            <div class="di-camera"></div>
-          </div>
+          <div class="dynamic-island"></div>
           <div class="phone-screen">
 
             <!-- Status bar -->
-            <div class="phone-status-bar">
-              <span class="status-time" id="statusTime">9:41</span>
+            <div class="phone-status">
+              <span class="status-time" id="statusClock">9:41</span>
               <div class="status-icons">
-                <!-- Signal -->
-                <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#000;"><rect x="1" y="15" width="3" height="6" rx="0.5"/><rect x="6" y="11" width="3" height="10" rx="0.5"/><rect x="11" y="7" width="3" height="14" rx="0.5"/><rect x="16" y="3" width="3" height="18" rx="0.5" opacity="0.3"/></svg>
-                <!-- WiFi -->
-                <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#000;stroke-width:2;stroke-linecap:round;"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="#000"/></svg>
-                <!-- Battery -->
-                <svg viewBox="0 0 24 24" style="width:18px;height:14px;fill:none;stroke:#000;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;"><rect x="1" y="6" width="18" height="12" rx="2"/><path d="M23 13v-2" stroke-width="2"/><rect x="3" y="8" width="14" height="8" rx="1" fill="#000"/></svg>
+                <svg viewBox="0 0 16 12" width="14" height="11" fill="#000"><rect x="0" y="6" width="2.5" height="6" rx="0.4"/><rect x="4" y="4" width="2.5" height="8" rx="0.4"/><rect x="8" y="2" width="2.5" height="10" rx="0.4"/><rect x="12" y="0" width="2.5" height="12" rx="0.4" opacity="0.3"/></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1.5" fill="#000" stroke="none"/></svg>
+                <svg viewBox="0 0 25 12" width="22" height="11" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#000" stroke-opacity="0.35"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#000"/><path d="M23 4v4a2 2 0 0 0 0-4z" fill="#000" fill-opacity="0.4"/></svg>
               </div>
             </div>
 
-            <div class="ig-screen" id="igScreen">
+            <!-- Instagram UI -->
+            <div class="ig-scroll">
 
-              <!-- Top bar -->
-              <div class="ig-topbar">
-                <div class="ig-topbar-left">
-                  <svg class="ig-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  <span class="ig-handle" id="igHandle">your.username</span>
+              <!-- Header -->
+              <div class="ig-header">
+                <div class="ig-username-bar">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span class="ig-username" id="igUsernameDisplay">your.username</span>
                 </div>
-                <div class="ig-topbar-right">
+                <div class="ig-hdr-icons">
                   <svg viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg>
-                  <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+                  <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>
                 </div>
               </div>
 
               <!-- Profile -->
-              <div class="ig-profile-section">
-                <div class="ig-profile-top">
-                  <div class="ig-avatar-wrap">
-                    <div class="ig-avatar">
-                      <div class="ig-avatar-inner" id="igAvatarInner">
-                        <span id="igAvatarLetter">Y</span>
-                      </div>
-                    </div>
+              <div class="ig-profile">
+                <div class="ig-profile-row">
+                  <div class="ig-avatar-ring">
+                    <div class="ig-avatar-inner" id="igAvatarCircle">Y</div>
                   </div>
-                  <div class="ig-stats">
-                    <div class="ig-stat"><span class="ig-stat-num">24</span><span class="ig-stat-lbl">Posts</span></div>
-                    <div class="ig-stat"><span class="ig-stat-num">1.2K</span><span class="ig-stat-lbl">Followers</span></div>
-                    <div class="ig-stat"><span class="ig-stat-num">318</span><span class="ig-stat-lbl">Following</span></div>
+                  <div class="ig-counters">
+                    <div class="ig-counter"><span class="ig-count">24</span><span class="ig-count-lbl">posts</span></div>
+                    <div class="ig-counter"><span class="ig-count">1.2K</span><span class="ig-count-lbl">followers</span></div>
+                    <div class="ig-counter"><span class="ig-count">318</span><span class="ig-count-lbl">following</span></div>
                   </div>
                 </div>
 
-                <div class="ig-name" id="igName">Your Name</div>
-                <div class="ig-bio-text" id="igBioText">✨ Creating cool things on the internet</div>
+                <div class="ig-display-name" id="igNameDisplay">Your Name</div>
+                <div class="ig-bio" id="igBioDisplay">✨ Creating cool things on the internet</div>
 
-                <!-- THE LINK IN BIO — this is what TrimURL is for -->
-                <a class="ig-bio-link" id="igBioLink" href="#" target="_blank" onclick="openBioLink(event)">
-                  <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                  <span id="igLinkText">paste your short link →</span>
-                </a>
+                <!-- BIO LINK -->
+                <div id="igLinkDisplay" style="margin-bottom:6px;">
+                  <span class="ig-link ig-link-placeholder">paste your short link →</span>
+                </div>
 
-                <div class="ig-actions">
+                <div class="ig-btns">
                   <button class="ig-btn ig-btn-follow">Follow</button>
                   <button class="ig-btn ig-btn-msg">Message</button>
                   <button class="ig-btn ig-btn-more">›</button>
                 </div>
               </div>
 
-              <!-- Story highlights -->
+              <!-- Highlights -->
               <div class="ig-highlights">
-                <div class="highlight"><div class="highlight-ring">🔗</div><span class="highlight-lbl">Links</span></div>
-                <div class="highlight"><div class="highlight-ring">📸</div><span class="highlight-lbl">Photos</span></div>
-                <div class="highlight"><div class="highlight-ring">🎬</div><span class="highlight-lbl">Videos</span></div>
-                <div class="highlight"><div class="highlight-ring">✨</div><span class="highlight-lbl">More</span></div>
+                <div class="ig-highlight"><div class="ig-highlight-ring">🔗</div><span class="ig-highlight-lbl">Links</span></div>
+                <div class="ig-highlight"><div class="ig-highlight-ring">📸</div><span class="ig-highlight-lbl">Photos</span></div>
+                <div class="ig-highlight"><div class="ig-highlight-ring">🎬</div><span class="ig-highlight-lbl">Reels</span></div>
+                <div class="ig-highlight"><div class="ig-highlight-ring">✨</div><span class="ig-highlight-lbl">More</span></div>
               </div>
 
-              <!-- Tab bar -->
-              <div class="ig-divider"></div>
-              <div class="ig-tabs">
-                <div class="ig-tab active">
-                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                </div>
-                <div class="ig-tab">
-                  <svg viewBox="0 0 24 24"><path d="M21 2H3v8l9 4 9-4V2zM3 14l9 4 9-4"/></svg>
-                </div>
-                <div class="ig-tab">
-                  <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                </div>
+              <!-- Tabs -->
+              <div class="ig-tabs-row">
+                <div class="ig-tab active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+                <div class="ig-tab"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+                <div class="ig-tab"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
               </div>
 
-              <!-- Posts grid -->
+              <!-- Grid -->
               <div class="ig-grid">
-                <div class="ig-post-thumb"><div class="post-g1">📸</div></div>
-                <div class="ig-post-thumb"><div class="post-g2">🎬</div></div>
-                <div class="ig-post-thumb"><div class="post-g3">✨</div></div>
-                <div class="ig-post-thumb"><div class="post-g4">🔗</div></div>
-                <div class="ig-post-thumb"><div class="post-g5">💜</div></div>
-                <div class="ig-post-thumb"><div class="post-g6">🚀</div></div>
-                <div class="ig-post-thumb"><div class="post-g2">🎯</div></div>
-                <div class="ig-post-thumb"><div class="post-g1">⚡</div></div>
-                <div class="ig-post-thumb"><div class="post-g4">🌟</div></div>
+                <div class="ig-cell c1">📸</div>
+                <div class="ig-cell c2">🎬</div>
+                <div class="ig-cell c3">✨</div>
+                <div class="ig-cell c4">🔗</div>
+                <div class="ig-cell c5">💜</div>
+                <div class="ig-cell c6">🚀</div>
+                <div class="ig-cell c2">🎯</div>
+                <div class="ig-cell c1">⚡</div>
+                <div class="ig-cell c4">🌟</div>
               </div>
-            </div><!-- /ig-screen -->
+
+            </div><!-- /ig-scroll -->
 
             <!-- Bottom nav -->
-            <div class="ig-bottom-nav">
-              <div class="ig-nav-item active">
-                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#262626" stroke="none"/><polyline points="9 22 9 12 15 12 15 22" stroke="#fff" stroke-width="2" fill="none"/></svg>
-              </div>
-              <div class="ig-nav-item">
-                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </div>
-              <div class="ig-nav-item">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-              </div>
-              <div class="ig-nav-item">
-                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              </div>
-              <div class="ig-nav-item">
-                <div class="ig-nav-profile-pic"></div>
-              </div>
+            <div class="ig-nav">
+              <div class="ig-nav-btn active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#262626" stroke="none"/><polyline points="9 22 9 12 15 12 15 22" stroke="#fff" stroke-width="2" fill="none"/></svg></div>
+              <div class="ig-nav-btn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <div class="ig-nav-btn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+              <div class="ig-nav-btn"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+              <div class="ig-nav-btn"><div class="ig-nav-dot"></div></div>
             </div>
 
           </div><!-- /phone-screen -->
         </div><!-- /phone -->
-      </div><!-- /phone-shell -->
+      </div><!-- /phone-col -->
 
-      <!-- ══ RIGHT: Controls ══ -->
-      <div class="controls-panel">
+      <!-- ══ Controls ══ -->
+      <div class="controls">
 
-        <!-- Bio Link Input -->
-        <div class="control-section">
-          <div class="ctrl-label">🔗 Link in Bio</div>
-          <p style="color:var(--t2);font-size:0.84rem;margin-bottom:0.75rem;line-height:1.5;">
-            Paste your TrimURL short link below — it will appear live in the Instagram bio preview on the left.
-          </p>
+        <!-- Link input -->
+        <div class="ctrl-card">
+          <div class="ctrl-title">🔗 Bio Link</div>
+          <div class="ctrl-desc">Paste your TrimURL short link — it updates the bio preview live.</div>
           <div class="ctrl-row">
-            <input class="ctrl-input" id="bioLinkInput" type="url" placeholder="https://your-domain.com/r/abc123"
-                   oninput="updateBioLink(this.value)">
-            <button class="btn-apply" onclick="applyLink()">Set Link</button>
+            <input class="ctrl-field" id="linkInput" type="text"
+                   placeholder="https://yourdomain.com/r/abc123"
+                   autocomplete="off" autocorrect="off" spellcheck="false">
+            <button class="btn-set" id="setLinkBtn">Set</button>
           </div>
-          <a class="btn-open-link" id="openLinkBtn" href="#" target="_blank">
-            🚀 Open link in new tab to test it
-          </a>
+          <button class="btn-open" id="openLinkBtn" style="display:none;">
+            🚀 Open link in new tab to test redirect
+          </button>
         </div>
 
-        <!-- Profile customisation -->
-        <div class="control-section">
-          <div class="ctrl-label">👤 Customise Profile</div>
-          <div style="display:flex;flex-direction:column;gap:0.6rem;">
-            <input class="ctrl-input" id="handleInput" type="text" placeholder="Instagram handle" value="your.username" oninput="updateHandle(this.value)">
-            <input class="ctrl-input" id="nameInput"   type="text" placeholder="Display name"      value="Your Name"       oninput="updateName(this.value)">
-            <input class="ctrl-input" id="bioInput"    type="text" placeholder="Bio text"          value="✨ Creating cool things on the internet" oninput="updateBio(this.value)">
+        <!-- Profile -->
+        <div class="ctrl-card">
+          <div class="ctrl-title">👤 Profile</div>
+          <div class="ctrl-fields-col">
+            <input class="ctrl-field" id="handleInput" type="text" placeholder="username" value="your.username">
+            <input class="ctrl-field" id="nameInput"   type="text" placeholder="Display name" value="Your Name">
+            <input class="ctrl-field" id="bioInput"    type="text" placeholder="Bio line" value="✨ Creating cool things on the internet">
           </div>
         </div>
 
-        <!-- Your saved links quick-pick -->
-        <div class="control-section" th:if="${!#lists.isEmpty(urls)}">
-          <div class="ctrl-label">⚡ Your TrimURL Links</div>
-          <p style="color:var(--t2);font-size:0.83rem;margin-bottom:0.75rem;">Click "Use" to instantly load any of your short links into the bio preview.</p>
+        <!-- Saved links -->
+        <div class="ctrl-card" th:if="${!#lists.isEmpty(urls)}">
+          <div class="ctrl-title">⚡ Your Short Links</div>
+          <div class="ctrl-desc">Click "Use" to load any link straight into the bio preview.</div>
           <div th:each="url : ${urls}">
-            <div class="saved-link-item">
+            <div class="saved-item">
               <div style="min-width:0;flex:1;">
-                <div class="saved-link-url" th:text="${url.shortUrl}">link</div>
-                <div class="saved-link-orig" th:text="${url.originalUrl}">original</div>
+                <div class="saved-url" th:text="${url.shortUrl}">link</div>
+                <div class="saved-orig" th:text="${url.originalUrl}">original</div>
               </div>
-              <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
-                <span th:if="${url.disabled}" class="status-badge disabled" style="font-size:0.65rem;">⛔</span>
-                <span th:unless="${url.disabled}" class="status-badge active" style="font-size:0.65rem;">✅</span>
-                <button class="btn-pick" th:onclick="'loadLink(\'' + ${url.shortUrl} + '\')'">Use</button>
+              <div style="display:flex;align-items:center;gap:0.35rem;flex-shrink:0;">
+                <span th:if="${url.disabled}"  class="status-badge disabled" style="font-size:0.62rem;padding:0.18rem 0.5rem;">⛔</span>
+                <span th:unless="${url.disabled}" class="status-badge active" style="font-size:0.62rem;padding:0.18rem 0.5rem;">✅</span>
+                <button class="btn-use" th:attr="data-url=${url.shortUrl}">Use</button>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="tip-box">
-          <strong>💡 How this works:</strong><br>
-          Instagram only allows one clickable link in your bio. Shorten your long URL with TrimURL, paste the short link here to preview exactly how it looks, then copy it to your real Instagram profile. When followers tap "Link in bio" they'll be redirected to your destination — and you get click analytics in your dashboard.
+        <div class="ctrl-card" th:if="${#lists.isEmpty(urls)}">
+          <div class="ctrl-title">⚡ Your Short Links</div>
+          <p style="color:var(--t3);font-size:0.85rem;">No links yet. <a href="/home" style="color:var(--p4);font-weight:700;">Create one →</a></p>
         </div>
 
-      </div><!-- /controls-panel -->
-    </div><!-- /test-layout -->
+        <div class="tip">
+          <strong>💡 Pro tip:</strong> Instagram only allows one clickable link in bio. Use a TrimURL short link to keep it clean — then track every click from your dashboard. Preview exactly how it looks here before putting it on your real profile.
+        </div>
+
+      </div><!-- /controls -->
+    </div><!-- /preview-wrap -->
   </div>
 </main>
 
 <footer><p>© 2026 TrimURL</p></footer>
 
 <script>
-// ── Live clock ──
-function updateClock(){
-  const now=new Date();
-  let h=now.getHours(),m=now.getMinutes();
-  document.getElementById('statusTime').textContent=h+':'+(m<10?'0'+m:m);
-}
-updateClock(); setInterval(updateClock,10000);
-
-// ── Toast ──
-function showToast(msg,type='info'){
-  const c=document.getElementById('toast-container');
-  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);
-  setTimeout(()=>{t.style.animation='toastOut 0.3s ease forwards';setTimeout(()=>t.remove(),300)},4500);
+/* ── Utilities ── */
+function showToast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(function(){ t.style.animation='toastOut 0.3s ease forwards'; setTimeout(function(){t.remove();},300); }, 4500);
 }
 
-// ── Update bio link in mockup ──
-function updateBioLink(val){
-  const linkEl=document.getElementById('igBioLink');
-  const textEl=document.getElementById('igLinkText');
-  const openBtn=document.getElementById('openLinkBtn');
+/* ── Clock ── */
+function tick() {
+  const d = new Date(), h = d.getHours(), m = d.getMinutes();
+  document.getElementById('statusClock').textContent = h + ':' + (m < 10 ? '0' + m : m);
+}
+tick();
+setInterval(tick, 15000);
 
-  if(!val||!val.trim()){
-    textEl.textContent='paste your short link →';
-    linkEl.href='#';
-    openBtn.href='#';
+/* ── Current link value (separate from input) ── */
+var currentLink = '';
+
+/* ── Render bio link in mockup ── */
+function renderBioLink(url) {
+  var el = document.getElementById('igLinkDisplay');
+  if (!url || !url.trim()) {
+    el.innerHTML = '<span class="ig-link ig-link-placeholder">paste your short link →</span>';
     return;
   }
-
-  // Show a clean version of the URL in the bio
-  let display=val.trim();
-  try{
-    const u=new URL(display);
-    display=u.hostname+u.pathname;
-    if(display.endsWith('/'))display=display.slice(0,-1);
-  }catch(e){}
-
-  textEl.textContent=display;
-  linkEl.href=val.trim();
-  openBtn.href=val.trim();
+  // Display label — strip protocol
+  var label = url.trim();
+  try {
+    var u = new URL(url.trim());
+    label = u.hostname + u.pathname.replace(/\/$/, '');
+  } catch(e) {
+    label = url.trim();
+  }
+  // Build a clickable <a> that opens in new tab
+  el.innerHTML =
+    '<a class="ig-link" href="' + url.trim() + '" target="_blank" rel="noopener noreferrer">' +
+    '<svg class="ig-link-icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+    label +
+    '</a>';
 }
 
-function applyLink(){
-  const val=document.getElementById('bioLinkInput').value.trim();
-  if(!val){showToast('Please enter a URL first','warning');return;}
-  updateBioLink(val);
-  showToast('✅ Bio link updated in preview!','success');
-  // Scroll phone screen to show the bio
-  document.getElementById('igScreen').scrollTo({top:0,behavior:'smooth'});
-}
-
-function openBioLink(e){
-  const href=document.getElementById('igBioLink').href;
-  if(!href||href==='#'||href===window.location.href){
-    e.preventDefault();
-    showToast('⚠️ Paste a link first, then tap it to open','warning');
+/* ── Set link button ── */
+function setLink() {
+  var val = document.getElementById('linkInput').value.trim();
+  if (!val) {
+    showToast('Please enter a URL first', 'warning');
     return;
   }
-  // Let it open naturally in _blank
+  // Add https:// if user forgot
+  if (val && !val.startsWith('http')) val = 'https://' + val;
+
+  currentLink = val;
+  document.getElementById('linkInput').value = val;
+  renderBioLink(val);
+
+  // Show open button
+  var openBtn = document.getElementById('openLinkBtn');
+  openBtn.style.display = 'block';
+  openBtn.onclick = function() { window.open(val, '_blank', 'noopener,noreferrer'); };
+
+  showToast('✅ Bio link updated!', 'success');
+  // Scroll phone to top so user sees the bio
+  document.querySelector('.ig-scroll').scrollTop = 0;
 }
 
-// ── Profile customisation ──
-function updateHandle(v){
-  document.getElementById('igHandle').textContent=v||'your.username';
-  const letter=(v||'Y')[0].toUpperCase();
-  document.getElementById('igAvatarLetter').textContent=letter;
-}
-function updateName(v){ document.getElementById('igName').textContent=v||'Your Name'; }
-function updateBio(v) { document.getElementById('igBioText').textContent=v||''; }
+/* ── Live preview as user types ── */
+document.getElementById('linkInput').addEventListener('input', function() {
+  var val = this.value.trim();
+  if (val.startsWith('http')) {
+    renderBioLink(val);
+  }
+});
 
-// ── Load a saved link directly ──
-function loadLink(url){
-  document.getElementById('bioLinkInput').value=url;
-  updateBioLink(url);
-  document.getElementById('openLinkBtn').href=url;
-  showToast('📲 Link loaded into bio preview!','success');
-  document.getElementById('igScreen').scrollTo({top:0,behavior:'smooth'});
-}
+/* ── Set link on Enter ── */
+document.getElementById('linkInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); setLink(); }
+});
 
-// ── Pre-fill first saved link if available ──
-(function(){
-  const first=document.querySelector('.saved-link-url');
-  if(first&&first.textContent.trim()){
-    const url=first.textContent.trim();
-    document.getElementById('bioLinkInput').value=url;
-    updateBioLink(url);
-    document.getElementById('openLinkBtn').href=url;
+document.getElementById('setLinkBtn').addEventListener('click', function() { setLink(); });
+
+/* ── Profile fields — live update ── */
+document.getElementById('handleInput').addEventListener('input', function() {
+  var v = this.value || 'your.username';
+  document.getElementById('igUsernameDisplay').textContent = v;
+  var letter = v.replace(/[^a-zA-Z0-9]/g, '')[0] || 'Y';
+  document.getElementById('igAvatarCircle').textContent = letter.toUpperCase();
+});
+
+document.getElementById('nameInput').addEventListener('input', function() {
+  document.getElementById('igNameDisplay').textContent = this.value || 'Your Name';
+});
+
+document.getElementById('bioInput').addEventListener('input', function() {
+  document.getElementById('igBioDisplay').textContent = this.value;
+});
+
+/* ── Use button on saved links ── */
+document.querySelectorAll('.btn-use').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var url = this.getAttribute('data-url');
+    if (!url) return;
+    document.getElementById('linkInput').value = url;
+    currentLink = url;
+    renderBioLink(url);
+    var openBtn = document.getElementById('openLinkBtn');
+    openBtn.style.display = 'block';
+    openBtn.onclick = function() { window.open(url, '_blank', 'noopener,noreferrer'); };
+    showToast('📲 Link loaded into preview!', 'success');
+    document.querySelector('.ig-scroll').scrollTop = 0;
+  });
+});
+
+/* ── Pre-fill first saved link ── */
+(function() {
+  var first = document.querySelector('.btn-use');
+  if (first) {
+    var url = first.getAttribute('data-url');
+    if (url) {
+      document.getElementById('linkInput').value = url;
+      currentLink = url;
+      renderBioLink(url);
+      var openBtn = document.getElementById('openLinkBtn');
+      openBtn.style.display = 'block';
+      openBtn.onclick = function() { window.open(url, '_blank', 'noopener,noreferrer'); };
+    }
   }
 })();
-
-// Enter key on link input
-document.getElementById('bioLinkInput').addEventListener('keydown',function(e){
-  if(e.key==='Enter'){applyLink();}
-});
 </script>
 </body>
 </html>
