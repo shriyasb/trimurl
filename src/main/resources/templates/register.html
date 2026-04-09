@@ -37,19 +37,6 @@
           <label class="form-label">Confirm Password</label>
           <input type="password" name="confirmPassword" id="cpw" placeholder="••••••••" required>
         </div>
-        <div class="form-group">
-          <label class="form-label">Account Type</label>
-          <div class="role-select-wrapper">
-            <label class="role-option selected" id="optUser">
-              <input type="radio" name="role" value="USER" checked>
-              <span class="role-icon">👤</span>User
-            </label>
-            <label class="role-option" id="optAdmin">
-              <input type="radio" name="role" value="ADMIN">
-              <span class="role-icon">🛡️</span>Admin
-            </label>
-          </div>
-        </div>
         <button type="submit" class="btn-primary">Create Account</button>
       </form>
       <p class="auth-switch">Already have an account? <a th:href="@{/login}">Sign In</a></p>
@@ -58,12 +45,6 @@
 </main>
 <footer><p>© 2026 TrimURL</p></footer>
 <script>
-document.querySelectorAll('.role-option').forEach(opt=>{
-  opt.addEventListener('click',()=>{
-    document.querySelectorAll('.role-option').forEach(o=>o.classList.remove('selected','selected-admin'));
-    opt.classList.add(opt.querySelector('input').value==='ADMIN'?'selected-admin':'selected');
-  });
-});
 document.getElementById('regForm').addEventListener('submit',e=>{
   if(document.getElementById('pw').value!==document.getElementById('cpw').value){
     e.preventDefault();alert('Passwords do not match!');

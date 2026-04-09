@@ -200,24 +200,15 @@ main{
 .auth-switch a{color:var(--p4);text-decoration:none;font-weight:700;}
 .auth-switch a:hover{text-decoration:underline;}
 
-.role-note{
-  text-align:center;margin-top:1rem;padding:0.55rem;
-  border-radius:var(--r);background:var(--p-tint);
-  border:1px solid rgba(124,58,237,0.2);color:var(--p3);font-size:0.8rem;
-}
 
-.role-select-wrapper{display:flex;gap:0.6rem;}
-.role-option{
-  flex:1;padding:0.85rem;border-radius:var(--r);
-  border:1px solid var(--border-md);background:var(--bg-input);
-  cursor:pointer;text-align:center;transition:all 0.18s;
-  color:var(--t2);font-weight:600;font-size:0.87rem;
-}
-.role-option input[type=radio]{display:none;}
-.role-option .role-icon{font-size:1.5rem;display:block;margin-bottom:0.3rem;}
-.role-option:hover{border-color:var(--border-p);color:var(--t1);}
-.role-option.selected      {border-color:var(--p6);background:var(--p-tint);color:var(--p3);}
-.role-option.selected-admin{border-color:var(--b5);background:var(--b-tint);color:var(--b4);}
+
+
+
+
+
+
+
+
 
 #toast-container{
   position:fixed;bottom:1.5rem;right:1.5rem;

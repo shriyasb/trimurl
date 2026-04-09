@@ -19,16 +19,15 @@ public class UrlController {
 
     private final UrlService urlService;
 
-    public UrlController(UrlService urlService) { this.urlService = urlService; }
+    public UrlController(UrlService urlService) {
+        this.urlService = urlService;
+    }
 
     @GetMapping("/")
     public String root() { return "redirect:/login"; }
 
     @GetMapping("/home")
-    public String home(@AuthenticationPrincipal UserDetails user) {
-        boolean isAdmin = user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        return isAdmin ? "redirect:/admin" : "home";
-    }
+    public String home() { return "home"; }
 
     @PostMapping("/shorten")
     public String shortenUrl(@Valid @ModelAttribute UrlRequest request,
@@ -59,14 +58,12 @@ public class UrlController {
         return "redirect:/dashboard";
     }
 
-    // FIX 3: Immediately disable with redirect flag for instant toast notification
     @PostMapping("/disable/{shortCode}")
     public String disableUrl(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
         urlService.disableNow(shortCode, user.getUsername());
         return "redirect:/dashboard?disabled=true";
     }
 
-    // Schedule disable in 1 hour (kept for backward compat / expiry warning system)
     @PostMapping("/schedule-disable/{shortCode}")
     public String scheduleDisable(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
         urlService.scheduleDisable(shortCode, user.getUsername());
@@ -79,7 +76,6 @@ public class UrlController {
         return "redirect:/dashboard?enabled=true";
     }
 
-    // Legacy toggle now routes to immediate disable
     @PostMapping("/toggle/{shortCode}")
     public String toggleUrl(@PathVariable String shortCode, @AuthenticationPrincipal UserDetails user) {
         urlService.disableNow(shortCode, user.getUsername());
@@ -133,7 +129,8 @@ public class UrlController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> checkUrl(@RequestBody Map<String, String> body) {
         String url = body.get("url");
-        if (url == null || url.isBlank()) return ResponseEntity.badRequest().body(Map.of("secure", false, "message", "No URL provided"));
+        if (url == null || url.isBlank())
+            return ResponseEntity.badRequest().body(Map.of("secure", false, "message", "No URL provided"));
         return ResponseEntity.ok(urlService.checkUrlSecurity(url));
     }
 }

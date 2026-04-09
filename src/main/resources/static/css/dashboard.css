@@ -63,11 +63,7 @@ header{
 .logo-text{font-family:'Outfit',sans-serif;font-size:1.35rem;font-weight:700;letter-spacing:1px;}
 .logo-text .bold{color:var(--p4);}
 .logo-text .light{color:var(--t2);font-weight:400;}
-.admin-badge{
-  display:inline-block;margin-left:0.5rem;padding:0.18rem 0.55rem;
-  border-radius:6px;font-size:0.62rem;font-weight:800;letter-spacing:1px;
-  background:linear-gradient(135deg,var(--p7),var(--p6));color:#fff;vertical-align:middle;
-}
+
 nav{display:flex;gap:0.2rem;align-items:center;}
 nav a{
   text-decoration:none;color:var(--t2);font-weight:600;
@@ -178,7 +174,7 @@ h2{
 .btn-small.btn-view           {border-color:rgba(96,165,250,0.3);color:var(--b4);}
 .btn-small.btn-view:hover     {background:var(--b-tint);border-color:var(--b4);}
 
-/* Admin */
+/* User card */
 .user-avatar{
   display:inline-flex;align-items:center;justify-content:center;
   width:32px;height:32px;border-radius:50%;
@@ -192,12 +188,9 @@ h2{
   font-weight:800;font-size:1.5rem;color:#fff;
   box-shadow:0 0 24px rgba(109,40,217,0.3);
 }
-.role-pill{
-  display:inline-block;padding:0.2rem 0.6rem;border-radius:20px;
-  font-size:0.68rem;font-weight:700;letter-spacing:0.3px;
-}
-.role-pill.admin{background:var(--p-tint);border:1px solid rgba(124,58,237,0.3);color:var(--p3);}
-.role-pill.user {background:var(--b-tint);border:1px solid rgba(59,130,246,0.3);color:var(--b4);}
+
+
+
 
 .user-header{
   background:var(--bg2);border:1px solid var(--border-md);border-radius:var(--r-lg);

@@ -28,7 +28,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/register", "/css/**", "/js/**").permitAll()
                 .requestMatchers("/r/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -47,17 +46,11 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return email -> userRepository.findByEmail(email)
-            .map(user -> {
-                if (user.isAccountDisabled()) {
-                    throw new UsernameNotFoundException("Account has been disabled by an administrator.");
-                }
-                String role = (user.getRole() != null) ? user.getRole() : "USER";
-                return org.springframework.security.core.userdetails.User.builder()
-                    .username(user.getEmail())
-                    .password(user.getPassword())
-                    .roles(role)
-                    .build();
-            })
+            .map(user -> org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .roles("USER")
+                .build())
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
